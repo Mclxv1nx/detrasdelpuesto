@@ -26,6 +26,10 @@ const SCHEMA = [
     visitor_id TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+  `CREATE TABLE IF NOT EXISTS hidden_comments (
+    comment_id TEXT PRIMARY KEY,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
   `CREATE INDEX IF NOT EXISTS idx_visits_created ON visits(created_at)`,
   `CREATE INDEX IF NOT EXISTS idx_comments_created ON comments(created_at)`,
 ];
@@ -161,6 +165,51 @@ export async function addComment(
     body: String(r.body),
     created_at: String(r.created_at),
   };
+}
+
+export async function getHiddenCommentIds(): Promise<Set<string>> {
+  await ensureSchema();
+  const res = await turso.execute("SELECT comment_id FROM hidden_comments");
+  return new Set(res.rows.map((r) => String(r.comment_id)));
+}
+
+export async function toggleHideComment(commentId: string | number): Promise<boolean> {
+  await ensureSchema();
+  const idStr = String(commentId);
+  const existing = await turso.execute({
+    sql: "SELECT comment_id FROM hidden_comments WHERE comment_id = ?",
+    args: [idStr],
+  });
+
+  if (existing.rows.length > 0) {
+    await turso.execute({
+      sql: "DELETE FROM hidden_comments WHERE comment_id = ?",
+      args: [idStr],
+    });
+    return false; // Ahora está visible
+  } else {
+    await turso.execute({
+      sql: "INSERT OR IGNORE INTO hidden_comments (comment_id) VALUES (?)",
+      args: [idStr],
+    });
+    return true; // Ahora está oculto
+  }
+}
+
+export async function deleteComment(commentId: number | string): Promise<void> {
+  await ensureSchema();
+  const idNum = Number(commentId);
+  if (idNum > 0) {
+    await turso.execute({
+      sql: "DELETE FROM comments WHERE id = ?",
+      args: [idNum],
+    });
+  }
+  // También lo agrega a hidden_comments por si es un ID de seed o para asegurar que no vuelva a aparecer
+  await turso.execute({
+    sql: "INSERT OR IGNORE INTO hidden_comments (comment_id) VALUES (?)",
+    args: [String(commentId)],
+  });
 }
 
 /* -------------------------------------------------------------------------- */

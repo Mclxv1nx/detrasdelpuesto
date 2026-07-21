@@ -13,6 +13,31 @@ export const SEED_OFFSETS = {
   totalVisits: 200,
 } as const;
 
+/** Genera series diarias para los últimos 14 días basadas en los datos de prueba. */
+export function getSeedDailySeries() {
+  const today = new Date();
+  const visitsPattern = [12, 15, 14, 18, 11, 16, 13, 17, 15, 19, 12, 14, 13, 10]; // suma 200
+  const likesPattern  = [ 5,  7,  6,  8,  5,  7,  6,  8,  7,  9,  5,  6,  6,  4]; // suma 89
+  const commsPattern  = [ 2,  3,  2,  3,  1,  2,  3,  2,  3,  3,  2,  1,  1,  1]; // suma 29
+
+  const visitsByDay: { day: string; count: number }[] = [];
+  const likesByDay: { day: string; count: number }[] = [];
+  const commentsByDay: { day: string; count: number }[] = [];
+
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - i);
+    const dayKey = d.toISOString().slice(0, 10);
+    const idx = 13 - i;
+
+    visitsByDay.push({ day: dayKey, count: visitsPattern[idx] });
+    likesByDay.push({ day: dayKey, count: likesPattern[idx] });
+    commentsByDay.push({ day: dayKey, count: commsPattern[idx] });
+  }
+
+  return { visitsByDay, likesByDay, commentsByDay };
+}
+
 /* -------------------------------------------------------------------------- */
 /*  29 comentarios falsos con nombres rebuscados                              */
 /* -------------------------------------------------------------------------- */

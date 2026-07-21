@@ -3,9 +3,10 @@ import Layout from "../layouts/Layout.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import Hero from "../components/Hero.astro";
 import Gallery from "../components/Gallery.astro";
+import Authors from "../components/Authors.astro";
 import Interactions from "../components/Interactions.astro";
 import SiteFooter from "../components/SiteFooter.astro";
-import { getComments, getLikeState, recordVisit, type Comment } from "../lib/db";
+import { getComments, getLikeState, getHiddenCommentIds, recordVisit, type Comment } from "../lib/db";
 import { getVisitorId } from "../lib/visitor";
 import { SEED_OFFSETS, SEED_COMMENTS } from "../lib/seed-data";
 
@@ -16,18 +17,21 @@ const visitorId = getVisitorId(Astro.cookies);
 let likes = 0;
 let liked = false;
 let comments: Comment[] = [];
+let hiddenSet = new Set<string>();
 let dbOnline = true;
 
 try {
   const referrer = Astro.request.headers.get("referer");
-  const [likeState, commentList] = await Promise.all([
+  const [likeState, commentList, hiddenIds] = await Promise.all([
     getLikeState(visitorId),
-    getComments(50),
+    getComments(100),
+    getHiddenCommentIds(),
     recordVisit(visitorId, "/", referrer),
   ]);
   likes = likeState.likes;
   liked = likeState.liked;
   comments = commentList;
+  hiddenSet = hiddenIds;
 } catch (error) {
   dbOnline = false;
   console.error("[detrasdelpuesto] Turso no disponible:", error);
@@ -35,8 +39,10 @@ try {
 
 // Sumar offsets quemados a los valores reales de la DB
 const totalLikes = likes + SEED_OFFSETS.likes;
-// Fusionar comentarios: los reales van primero (más recientes), los seed al final
-const allComments = [...comments, ...SEED_COMMENTS];
+// Fusionar comentarios: los reales van primero (más recientes), los seed al final, excluyendo ocultos
+const allComments = [...comments, ...SEED_COMMENTS].filter(
+  (c) => !hiddenSet.has(String(c.id))
+);
 
 const cifras = [
   {
@@ -199,6 +205,8 @@ const causas = [
     </section>
 
     <Gallery />
+
+    <Authors />
 
     <!-- Conclusión -------------------------------------------------------- -->
     <section class="section conclusion" id="conclusion">

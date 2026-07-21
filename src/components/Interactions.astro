@@ -124,6 +124,16 @@ function initials(name: string) {
           ))
         }
       </ol>
+
+      <nav class="comment-pagination" data-comment-pagination hidden>
+        <button type="button" class="btn btn--ghost comment-pagination__btn" data-page-prev disabled>
+          ← Anteriores
+        </button>
+        <span class="comment-pagination__info" data-page-info>Página 1 de 1</span>
+        <button type="button" class="btn btn--ghost comment-pagination__btn" data-page-next>
+          Siguientes →
+        </button>
+      </nav>
     </div>
   </div>
 </section>
@@ -230,6 +240,67 @@ function initials(name: string) {
     return li;
   }
 
+  /* --------------------------------------------------------- Pagination */
+  const PAGE_SIZE = 6;
+  let currentPage = 1;
+
+  const paginationNav = document.querySelector<HTMLElement>("[data-comment-pagination]");
+  const prevBtn = document.querySelector<HTMLButtonElement>("[data-page-prev]");
+  const nextBtn = document.querySelector<HTMLButtonElement>("[data-page-next]");
+  const pageInfo = document.querySelector<HTMLElement>("[data-page-info]");
+
+  function updatePagination() {
+    if (!list) return;
+    const allItems = Array.from(list.children) as HTMLElement[];
+    const totalComments = allItems.length;
+    const totalPages = Math.ceil(totalComments / PAGE_SIZE) || 1;
+
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    allItems.forEach((item, index) => {
+      const pageIndex = Math.floor(index / PAGE_SIZE) + 1;
+      if (pageIndex === currentPage) {
+        item.style.display = "";
+      } else {
+        item.style.display = "none";
+      }
+    });
+
+    if (paginationNav) {
+      if (totalPages > 1) {
+        paginationNav.removeAttribute("hidden");
+      } else {
+        paginationNav.setAttribute("hidden", "");
+      }
+    }
+
+    if (pageInfo) pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+  }
+
+  prevBtn?.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      updatePagination();
+      list?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+
+  nextBtn?.addEventListener("click", () => {
+    const allItems = Array.from(list?.children ?? []) as HTMLElement[];
+    const totalPages = Math.ceil(allItems.length / PAGE_SIZE) || 1;
+    if (currentPage < totalPages) {
+      currentPage++;
+      updatePagination();
+      list?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+
+  // Inicializar paginación
+  updatePagination();
+
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(form);
@@ -269,6 +340,10 @@ function initials(name: string) {
         status.textContent = "¡Gracias! Tu comentario ya está publicado.";
         status.dataset.tone = "ok";
       }
+
+      // Reiniciar a la primera página y actualizar la vista de la lista
+      currentPage = 1;
+      updatePagination();
     } catch (err) {
       if (status) {
         status.textContent =
@@ -504,27 +579,28 @@ function initials(name: string) {
     gap: var(--space-xs);
   }
 
-  .comment {
+  :global(.comment) {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.85rem;
     padding: var(--space-s);
     border-radius: var(--radius-m);
     background: var(--surface);
-    border: 1px solid transparent;
+    border: 1px solid var(--earth-300);
+    box-shadow: var(--shadow-s);
     transition:
       border-color 0.3s var(--ease),
       transform 0.3s var(--ease),
       box-shadow 0.3s var(--ease);
   }
 
-  .comment:hover {
-    border-color: var(--earth-300);
+  :global(.comment:hover) {
+    border-color: var(--terracotta);
     transform: translateX(3px);
-    box-shadow: var(--shadow-s);
+    box-shadow: var(--shadow-m);
   }
 
-  .comment__avatar {
+  :global(.comment__avatar) {
     display: grid;
     place-items: center;
     width: 38px;
@@ -537,7 +613,12 @@ function initials(name: string) {
     font-weight: 600;
   }
 
-  .comment__meta {
+  :global(.comment__body) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  :global(.comment__meta) {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -545,25 +626,56 @@ function initials(name: string) {
     margin-bottom: 0.15rem;
   }
 
-  .comment__meta strong {
+  :global(.comment__meta strong) {
     font-size: var(--step--1);
     color: var(--navy-900);
   }
 
-  .comment__meta time {
+  :global(.comment__meta time) {
     font-size: 0.72rem;
     color: var(--gray-500);
   }
 
-  .comment__text {
+  :global(.comment__text) {
     font-size: var(--step--1);
     color: var(--gray-700);
     overflow-wrap: anywhere;
+    margin-top: 0.1rem;
   }
 
-  .comment.is-new {
+  :global(.comment.is-new) {
     animation: slideIn 0.5s var(--ease);
-    border-color: color-mix(in srgb, var(--terracotta) 45%, transparent);
+    border-color: color-mix(in srgb, var(--terracotta) 80%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 20%, transparent);
+  }
+
+  /* Paginador ----------------------------------------------------------- */
+
+  .comment-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-s);
+    margin-top: var(--space-m);
+    padding-top: var(--space-s);
+    border-top: 1px solid var(--earth-300);
+  }
+
+  .comment-pagination__info {
+    font-size: var(--step--1);
+    color: var(--gray-500);
+    font-weight: 500;
+  }
+
+  .comment-pagination__btn {
+    min-height: 40px;
+    padding: 0.4rem 1rem;
+  }
+
+  .comment-pagination__btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
   }
 
   @keyframes slideIn {

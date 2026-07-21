@@ -1,0 +1,151 @@
+---
+const authors = [
+  {
+    name: "Damián Reyes",
+    role: "Investigación Periodística & Dirección",
+    bio: "Especialista en comunicación e investigación de campo. Encargado de coordinar las entrevistas a comerciantes, autoridades municipales y estructurar la narrativa central del reportaje.",
+    photo: "/img/damian-reyes.jpeg",
+  },
+  {
+    name: "Flor Lema",
+    role: "Fotoperiodismo & Trabajo de Campo",
+    bio: "Fotógrafa e investigadora comunitaria. Encargada del registro visual documental en Otavalo e Ibarra, capturando la vida diaria, el color y la dignidad del trabajo informal.",
+    photo: "/img/flor-lema.jpeg",
+  },
+  {
+    name: "Alexis Ulcuango",
+    role: "Análisis Socioeconómico & Redacción",
+    bio: "Investigador enfocado en dinámicas territoriales e indicadores de empleo. Responsable de la sistematización de datos oficiales, contraste de fuentes y redacción del cuerpo del informe.",
+    photo: "/img/alexis.jpeg",
+  },
+];
+---
+
+<section class="section autores" id="autores">
+  <div class="container">
+    <header class="autores__head reveal--scale">
+      <p class="eyebrow">Equipo de Investigación</p>
+      <h2>Autores del Reportaje</h2>
+      <p class="autores__intro">
+        Conoce al equipo periodístico detrás de "Detrás del Puesto", comprometidos con la investigación imparcial y la visibilización de la realidad socioeconómica de Imbabura.
+      </p>
+    </header>
+
+    <div class="autores__grid reveal-stagger">
+      {
+        authors.map((a) => (
+          <article class="autor-card">
+            <div class="autor-card__media">
+              <img src={a.photo} alt={a.name} loading="lazy" decoding="async" />
+            </div>
+            <div class="autor-card__content">
+              <h3 class="autor-card__name">{a.name}</h3>
+              <p class="autor-card__role">{a.role}</p>
+              <p class="autor-card__bio">{a.bio}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .autores {
+    background: var(--surface);
+    border-block: 1px solid var(--earth-300);
+  }
+
+  .autores__head {
+    max-width: var(--measure);
+    margin-bottom: var(--space-l);
+  }
+
+  .autores__head h2 {
+    font-size: var(--step-3);
+    margin-block: var(--space-2xs) var(--space-xs);
+  }
+
+  .autores__intro {
+    color: var(--gray-700);
+  }
+
+  .autores__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-m);
+  }
+
+  .autor-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--earth-100);
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    transition:
+      transform 0.4s var(--ease),
+      box-shadow 0.4s var(--ease),
+      border-color 0.4s var(--ease);
+  }
+
+  .autor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-m);
+    border-color: var(--terracotta);
+  }
+
+  .autor-card__media {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--navy-900);
+  }
+
+  .autor-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: transform 0.6s var(--ease);
+  }
+
+  .autor-card:hover .autor-card__media img {
+    transform: scale(1.05);
+  }
+
+  .autor-card__content {
+    padding: var(--space-m);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .autor-card__name {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    color: var(--navy-900);
+    margin-bottom: 0.15rem;
+  }
+
+  .autor-card__role {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--terracotta-dark);
+    margin-bottom: var(--space-xs);
+  }
+
+  .autor-card__bio {
+    font-size: var(--step--1);
+    color: var(--gray-700);
+    line-height: 1.55;
+  }
+
+  @media (min-width: 44rem) {
+    .autores__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

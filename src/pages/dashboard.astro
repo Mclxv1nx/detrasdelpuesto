@@ -3,9 +3,17 @@ import Layout from "../layouts/Layout.astro";
 import StatCard from "../components/StatCard.astro";
 import BarChart from "../components/BarChart.astro";
 import PieChart from "../components/PieChart.astro";
-import { getStats, type Stats } from "../lib/db";
+import {
+  getStats,
+  getComments,
+  getHiddenCommentIds,
+  toggleHideComment,
+  deleteComment,
+  type Stats,
+  type Comment,
+} from "../lib/db";
 import { isAuthenticated, isPasswordConfigured, login, logout } from "../lib/auth";
-import { SEED_OFFSETS, SEED_COMMENTS } from "../lib/seed-data";
+import { SEED_OFFSETS, SEED_COMMENTS, getSeedDailySeries } from "../lib/seed-data";
 
 export const prerender = false;
 
@@ -14,12 +22,28 @@ const configured = isPasswordConfigured();
 
 /* ------------------------------- Autenticación ------------------------- */
 
+const authed = await isAuthenticated(Astro.cookies);
+
 if (Astro.request.method === "POST") {
   const form = await Astro.request.formData();
+  const action = form.get("action");
 
-  if (form.get("action") === "logout") {
+  if (action === "logout") {
     logout(Astro.cookies);
     return Astro.redirect("/dashboard", 303);
+  }
+
+  if (authed) {
+    if (action === "toggle_hide") {
+      const commentId = String(form.get("comment_id") ?? "");
+      if (commentId) await toggleHideComment(commentId);
+      return Astro.redirect("/dashboard", 303);
+    }
+    if (action === "delete_comment") {
+      const commentId = String(form.get("comment_id") ?? "");
+      if (commentId) await deleteComment(commentId);
+      return Astro.redirect("/dashboard", 303);
+    }
   }
 
   const ok = await login(Astro.cookies, String(form.get("password") ?? ""));
@@ -29,21 +53,54 @@ if (Astro.request.method === "POST") {
     : "Falta definir DASHBOARD_PASSWORD en las variables de entorno.";
 }
 
-const authed = await isAuthenticated(Astro.cookies);
-
 /* --------------------------------- Datos -------------------------------- */
 
 let stats: Stats | null = null;
+let dbComments: Comment[] = [];
+let hiddenSet = new Set<string>();
 let dbError = "";
 
 if (authed) {
   try {
-    stats = await getStats();
+    const [st, cm, hd] = await Promise.all([
+      getStats(),
+      getComments(100),
+      getHiddenCommentIds(),
+    ]);
+    stats = st;
+    dbComments = cm;
+    hiddenSet = hd;
   } catch (e) {
     dbError = "No se pudo conectar con la base de datos Turso.";
     console.error("[dashboard]", e);
   }
 }
+
+const seedDaily = getSeedDailySeries();
+
+const mergedVisitsByDay = stats
+  ? stats.visitsByDay.map((d, i) => ({
+      day: d.day,
+      count: d.count + (seedDaily.visitsByDay[i]?.count ?? 0),
+    }))
+  : seedDaily.visitsByDay;
+
+const mergedLikesByDay = stats
+  ? stats.likesByDay.map((d, i) => ({
+      day: d.day,
+      count: d.count + (seedDaily.likesByDay[i]?.count ?? 0),
+    }))
+  : seedDaily.likesByDay;
+
+const mergedCommentsByDay = stats
+  ? stats.commentsByDay.map((d, i) => ({
+      day: d.day,
+      count: d.count + (seedDaily.commentsByDay[i]?.count ?? 0),
+    }))
+  : seedDaily.commentsByDay;
+
+// Fusionar todos los comentarios para administración
+const allDashboardComments = [...dbComments, ...SEED_COMMENTS];
 
 const pct = (part: number, whole: number) =>
   whole > 0 ? `${((part / whole) * 100).toFixed(1)}% de las visitas` : "Sin visitas aún";
@@ -142,14 +199,14 @@ const last7 = (series: { count: number }[]) =>
               <section class="charts">
                 <BarChart
                   title="Actividad de los últimos 14 días"
-                  subtitle="Visitas, likes y comentarios registrados por día"
+                  subtitle="Visitas, likes y comentarios registrados por día (últimos 14 días)"
                   series={[
-                    { name: "Visitas", color: "#1e3550", data: stats.visitsByDay },
-                    { name: "Likes", color: "#c8785a", data: stats.likesByDay },
+                    { name: "Visitas", color: "#1e3550", data: mergedVisitsByDay },
+                    { name: "Likes", color: "#c8785a", data: mergedLikesByDay },
                     {
                       name: "Comentarios",
                       color: "#8fa3b8",
-                      data: stats.commentsByDay,
+                      data: mergedCommentsByDay,
                     },
                   ]}
                 />
@@ -176,20 +233,46 @@ const last7 = (series: { count: number }[]) =>
               </section>
 
               <section class="recent">
-                <h2>Últimos comentarios</h2>
-                {stats.recentComments.length === 0 ? (
+                <div class="recent__header">
+                  <h2>Gestión de comentarios ({allDashboardComments.length})</h2>
+                  <p class="recent__sub">Puedes ocultar comentarios de la landing page o eliminarlos permanentemente.</p>
+                </div>
+
+                {allDashboardComments.length === 0 ? (
                   <p class="recent__empty">Todavía no hay comentarios.</p>
                 ) : (
                   <ul class="recent__list">
-                    {stats.recentComments.map((c) => (
-                      <li>
-                        <div class="recent__meta">
-                          <strong>{c.author}</strong>
-                          <time datetime={c.created_at}>{c.created_at}</time>
-                        </div>
-                        <p>{c.body}</p>
-                      </li>
-                    ))}
+                    {allDashboardComments.map((c) => {
+                      const isHidden = hiddenSet.has(String(c.id));
+                      return (
+                        <li class:list={["dash-comment", isHidden && "dash-comment--hidden"]}>
+                          <div class="dash-comment__main">
+                            <div class="dash-comment__meta">
+                              <strong>{c.author}</strong>
+                              <time datetime={c.created_at}>{c.created_at}</time>
+                              {isHidden && <span class="badge badge--warn">Oculto</span>}
+                            </div>
+                            <p class="dash-comment__text">{c.body}</p>
+                          </div>
+                          <div class="dash-comment__actions">
+                            <form method="POST">
+                              <input type="hidden" name="action" value="toggle_hide" />
+                              <input type="hidden" name="comment_id" value={c.id} />
+                              <button type="submit" class="btn btn--xs btn--ghost">
+                                {isHidden ? "👁️ Mostrar" : "🙈 Ocultar"}
+                              </button>
+                            </form>
+                            <form method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este comentario?');">
+                              <input type="hidden" name="action" value="delete_comment" />
+                              <input type="hidden" name="comment_id" value={c.id} />
+                              <button type="submit" class="btn btn--xs btn--danger">
+                                🗑️ Eliminar
+                              </button>
+                            </form>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </section>
@@ -341,15 +424,23 @@ const last7 = (series: { count: number }[]) =>
     gap: var(--space-m);
   }
 
-  /* Comentarios recientes ------------------------------------------------ */
+  /* Comentarios recientes & moderación ---------------------------------- */
 
   .recent {
     margin-top: var(--space-xl);
   }
 
+  .recent__header {
+    margin-bottom: var(--space-s);
+  }
+
   .recent h2 {
     font-size: var(--step-2);
-    margin-bottom: var(--space-s);
+  }
+
+  .recent__sub {
+    font-size: var(--step--1);
+    color: var(--gray-500);
   }
 
   .recent__empty {
@@ -365,43 +456,94 @@ const last7 = (series: { count: number }[]) =>
     gap: var(--space-xs);
   }
 
-  .recent__list li {
+  .dash-comment {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-s);
     padding: var(--space-s);
     background: var(--surface);
     border: 1px solid var(--earth-300);
     border-radius: var(--radius-m);
     transition:
       transform 0.25s var(--ease),
-      box-shadow 0.25s var(--ease);
+      box-shadow 0.25s var(--ease),
+      opacity 0.25s var(--ease);
   }
 
-  .recent__list li:hover {
-    transform: translateX(3px);
-    box-shadow: var(--shadow-s);
+  .dash-comment--hidden {
+    opacity: 0.6;
+    background: var(--earth-100);
+    border-style: dashed;
   }
 
-  .recent__meta {
+  .dash-comment__main {
+    flex: 1;
+    min-width: 260px;
+  }
+
+  .dash-comment__meta {
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem;
-    align-items: baseline;
+    align-items: center;
     margin-bottom: 0.25rem;
   }
 
-  .recent__meta strong {
+  .dash-comment__meta strong {
     font-size: var(--step--1);
   }
 
-  .recent__meta time {
+  .dash-comment__meta time {
     font-size: 0.7rem;
     color: var(--gray-500);
     font-variant-numeric: tabular-nums;
   }
 
-  .recent__list p {
+  .dash-comment__text {
     font-size: var(--step--1);
     color: var(--gray-700);
     overflow-wrap: anywhere;
+  }
+
+  .dash-comment__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--radius-s);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .badge--warn {
+    background: #fdf1e7;
+    color: #a75f45;
+    border: 1px solid #e6c3a5;
+  }
+
+  .btn--xs {
+    min-height: 32px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  .btn--danger {
+    background: transparent;
+    border-color: color-mix(in srgb, #b4442f 40%, transparent);
+    color: #b4442f;
+  }
+
+  .btn--danger:hover {
+    background: #b4442f;
+    color: #ffffff;
   }
 
   /* Breakpoints ---------------------------------------------------------- */
