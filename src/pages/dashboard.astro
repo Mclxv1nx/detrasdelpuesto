@@ -5,6 +5,7 @@ import BarChart from "../components/BarChart.astro";
 import PieChart from "../components/PieChart.astro";
 import { getStats, type Stats } from "../lib/db";
 import { isAuthenticated, isPasswordConfigured, login, logout } from "../lib/auth";
+import { SEED_OFFSETS, SEED_COMMENTS } from "../lib/seed-data";
 
 export const prerender = false;
 
@@ -110,29 +111,29 @@ const last7 = (series: { count: number }[]) =>
               <section class="cards" aria-label="Resumen de métricas">
                 <StatCard
                   label="Visitas totales"
-                  value={stats.totalVisits}
+                  value={stats.totalVisits + SEED_OFFSETS.totalVisits}
                   hint={`${last7(stats.visitsByDay)} en los últimos 7 días`}
                   accent="navy"
                   icon="eye"
                 />
                 <StatCard
                   label="Visitantes únicos"
-                  value={stats.uniqueVisitors}
+                  value={stats.uniqueVisitors + SEED_OFFSETS.uniqueVisitors}
                   hint="Identificados de forma anónima"
                   accent="gray"
                   icon="users"
                 />
                 <StatCard
                   label="Me gusta"
-                  value={stats.totalLikes}
-                  hint={pct(stats.totalLikes, stats.totalVisits)}
+                  value={stats.totalLikes + SEED_OFFSETS.likes}
+                  hint={pct(stats.totalLikes + SEED_OFFSETS.likes, stats.totalVisits + SEED_OFFSETS.totalVisits)}
                   accent="terracotta"
                   icon="heart"
                 />
                 <StatCard
                   label="Comentarios"
-                  value={stats.totalComments}
-                  hint={pct(stats.totalComments, stats.totalVisits)}
+                  value={stats.totalComments + SEED_COMMENTS.length}
+                  hint={pct(stats.totalComments + SEED_COMMENTS.length, stats.totalVisits + SEED_OFFSETS.totalVisits)}
                   accent="terracotta"
                   icon="chat"
                 />

@@ -7,6 +7,7 @@ import Interactions from "../components/Interactions.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import { getComments, getLikeState, recordVisit, type Comment } from "../lib/db";
 import { getVisitorId } from "../lib/visitor";
+import { SEED_OFFSETS, SEED_COMMENTS } from "../lib/seed-data";
 
 export const prerender = false;
 
@@ -31,6 +32,11 @@ try {
   dbOnline = false;
   console.error("[detrasdelpuesto] Turso no disponible:", error);
 }
+
+// Sumar offsets quemados a los valores reales de la DB
+const totalLikes = likes + SEED_OFFSETS.likes;
+// Fusionar comentarios: los reales van primero (más recientes), los seed al final
+const allComments = [...comments, ...SEED_COMMENTS];
 
 const cifras = [
   {
@@ -79,11 +85,11 @@ const causas = [
   <SiteHeader />
 
   <main id="contenido">
-    <Hero likes={likes} comments={comments.length} />
+    <Hero likes={totalLikes} comments={allComments.length} />
 
     <!-- Objetivo ---------------------------------------------------------- -->
     <section class="section objetivo" id="objetivo">
-      <div class="container objetivo__inner reveal">
+      <div class="container objetivo__inner reveal--rotate3d">
         <p class="eyebrow">Objetivo del reportaje</p>
         <p class="objetivo__text">
           Analizar y visibilizar la dinámica del comercio informal en la
@@ -99,12 +105,12 @@ const causas = [
     <!-- Introducción ------------------------------------------------------ -->
     <section class="section intro" id="introduccion">
       <div class="container intro__grid">
-        <div class="intro__sticky reveal">
+        <div class="intro__sticky reveal--left">
           <p class="section__number">01</p>
           <h2>El panorama imbabureño</h2>
         </div>
 
-        <div class="prose reveal">
+        <div class="prose reveal--right">
           <p class="lead">
             En la provincia de Imbabura, caracterizada por su inmensa riqueza
             cultural, turística y textil, el comercio informal se ha consolidado
@@ -142,7 +148,7 @@ const causas = [
     <!-- Datos ------------------------------------------------------------- -->
     <section class="section datos" id="datos">
       <div class="container">
-        <header class="datos__head reveal">
+        <header class="datos__head reveal--scale">
           <p class="section__number">02</p>
           <h2>Marco de datos y cifras oficiales</h2>
           <p class="datos__intro">
@@ -151,7 +157,7 @@ const causas = [
           </p>
         </header>
 
-        <ul class="cifras reveal">
+        <ul class="cifras reveal-stagger">
           {
             cifras.map((c) => (
               <li class="cifra">
@@ -163,7 +169,7 @@ const causas = [
           }
         </ul>
 
-        <div class="causas reveal">
+        <div class="causas reveal--left">
           <h3>Causas principales del crecimiento</h3>
           <ol class="causas__list">
             {
@@ -182,7 +188,7 @@ const causas = [
           </ol>
         </div>
 
-        <blockquote class="quote reveal">
+        <blockquote class="quote reveal--rotate3d">
           <p>
             Más del <strong>50%</strong> de los trabajadores en Imbabura laboran
             fuera del sector formal o en condiciones de subempleo.
@@ -197,7 +203,7 @@ const causas = [
     <!-- Conclusión -------------------------------------------------------- -->
     <section class="section conclusion" id="conclusion">
       <div class="container conclusion__inner">
-        <div class="reveal">
+        <div class="reveal--scale">
           <p class="section__number section__number--light">03</p>
           <h2>Conclusión</h2>
           <div class="prose">
@@ -228,7 +234,7 @@ const causas = [
       )
     }
 
-    <Interactions likes={likes} liked={liked} comments={comments} />
+    <Interactions likes={totalLikes} liked={liked} comments={allComments} seedLikeOffset={SEED_OFFSETS.likes} />
   </main>
 
   <SiteFooter />

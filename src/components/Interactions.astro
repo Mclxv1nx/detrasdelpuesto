@@ -5,9 +5,10 @@ interface Props {
   likes: number;
   liked: boolean;
   comments: Comment[];
+  seedLikeOffset?: number;
 }
 
-const { likes, liked, comments } = Astro.props;
+const { likes, liked, comments, seedLikeOffset = 0 } = Astro.props;
 
 const fmt = new Intl.DateTimeFormat("es-EC", {
   day: "numeric",
@@ -28,7 +29,7 @@ function initials(name: string) {
 
 <section class="section interactions" id="conversacion">
   <div class="container interactions__inner">
-    <header class="reveal">
+    <header class="reveal--left">
       <p class="eyebrow">Únete a la conversación</p>
       <h2>¿Qué opinas de esta realidad?</h2>
       <p class="interactions__intro">
@@ -38,7 +39,7 @@ function initials(name: string) {
     </header>
 
     <!-- Like ------------------------------------------------------------ -->
-    <div class="likebar reveal">
+    <div class="likebar reveal--right" data-seed-offset={String(seedLikeOffset)}>
       <button
         type="button"
         class="like"
@@ -60,7 +61,7 @@ function initials(name: string) {
     </div>
 
     <!-- Formulario ------------------------------------------------------ -->
-    <form class="form reveal" data-comment-form novalidate>
+    <form class="form reveal--rotate3d" data-comment-form novalidate>
       <div class="field">
         <label for="author">Tu nombre</label>
         <input
@@ -96,7 +97,7 @@ function initials(name: string) {
     </form>
 
     <!-- Lista ----------------------------------------------------------- -->
-    <div class="thread reveal">
+    <div class="thread reveal--scale">
       <h3 class="thread__title">
         Comentarios <span data-comment-count>({comments.length})</span>
       </h3>
@@ -145,8 +146,9 @@ function initials(name: string) {
       });
       if (!res.ok) throw new Error("fail");
       const data = (await res.json()) as { likes: number; liked: boolean };
+      const seedOffset = Number(document.querySelector<HTMLElement>("[data-seed-offset]")?.dataset.seedOffset ?? 0);
 
-      if (likeCount) likeCount.textContent = String(data.likes);
+      if (likeCount) likeCount.textContent = String(data.likes + seedOffset);
       likeBtn.dataset.liked = String(data.liked);
       likeBtn.setAttribute("aria-pressed", String(data.liked));
       if (likeHint)

@@ -61,7 +61,7 @@ const photos = [
 
 <section class="section gallery" id="galeria">
   <div class="container">
-    <header class="gallery__head reveal">
+    <header class="gallery__head reveal--scale">
       <p class="eyebrow">Trabajo de campo</p>
       <h2>Imágenes desde el terreno</h2>
       <p class="gallery__intro">
@@ -70,7 +70,7 @@ const photos = [
       </p>
     </header>
 
-    <ul class="grid reveal">
+    <ul class="grid reveal-stagger">
       {
         photos.map((p, i) => (
           <li class:list={["card", p.span && `card--${p.span}`]}>
