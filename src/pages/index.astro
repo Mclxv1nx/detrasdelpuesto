@@ -1,11 +1,547 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import Hero from "../components/Hero.astro";
+import Gallery from "../components/Gallery.astro";
+import Interactions from "../components/Interactions.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { getComments, getLikeState, recordVisit, type Comment } from "../lib/db";
+import { getVisitorId } from "../lib/visitor";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+export const prerender = false;
+
+const visitorId = getVisitorId(Astro.cookies);
+
+let likes = 0;
+let liked = false;
+let comments: Comment[] = [];
+let dbOnline = true;
+
+try {
+  const referrer = Astro.request.headers.get("referer");
+  const [likeState, commentList] = await Promise.all([
+    getLikeState(visitorId),
+    getComments(50),
+    recordVisit(visitorId, "/", referrer),
+  ]);
+  likes = likeState.likes;
+  liked = likeState.liked;
+  comments = commentList;
+} catch (error) {
+  dbOnline = false;
+  console.error("[detrasdelpuesto] Turso no disponible:", error);
+}
+
+const cifras = [
+  {
+    value: "51–54%",
+    label: "de la PEA nacional",
+    detail:
+      "El sector informal agrupa a más de la mitad de los trabajadores del Ecuador, en subempleo o empleo no regulado.",
+  },
+  {
+    value: "≈53%",
+    label: "informalidad en Imbabura",
+    detail:
+      "En la Sierra norte la tasa supera el promedio nacional, sobre todo en zonas urbanas periféricas y rurales.",
+  },
+  {
+    value: "2",
+    label: "ciudades eje",
+    detail:
+      "Otavalo e Ibarra concentran la mayor densidad de comercio ambulante y ferias no reguladas de la provincia.",
+  },
+  {
+    value: "3",
+    label: "sectores clave",
+    detail:
+      "Textiles y artesanías, alimentos preparados y productos agrícolas sostienen esta economía.",
+  },
+];
+
+const causas = [
+  {
+    title: "Mercado laboral restringido",
+    text: "Escasez de vacantes tanto en el sector privado como en el público, que empuja a miles de personas fuera del empleo formal.",
+  },
+  {
+    title: "Barrera de entrada mínima",
+    text: "Los bajos costos iniciales hacen del comercio minorista la opción más accesible para empezar a generar ingresos.",
+  },
+  {
+    title: "Necesidad de liquidez diaria",
+    text: "La urgencia de cubrir la canasta básica familiar exige ingresos inmediatos, no salarios quincenales.",
+  },
+];
 ---
 
 <Layout>
-	<Welcome />
+  <SiteHeader />
+
+  <main id="contenido">
+    <Hero likes={likes} comments={comments.length} />
+
+    <!-- Objetivo ---------------------------------------------------------- -->
+    <section class="section objetivo" id="objetivo">
+      <div class="container objetivo__inner reveal">
+        <p class="eyebrow">Objetivo del reportaje</p>
+        <p class="objetivo__text">
+          Analizar y visibilizar la dinámica del comercio informal en la
+          provincia de Imbabura, examinando los factores socioeconómicos que
+          impulsan su crecimiento, las condiciones de quienes ejercen esta
+          actividad y las implicaciones socioespaciales en el entorno urbano
+          local. Todo esto abordado desde un enfoque
+          <mark>periodístico neutral, investigativo y equilibrado</mark>.
+        </p>
+      </div>
+    </section>
+
+    <!-- Introducción ------------------------------------------------------ -->
+    <section class="section intro" id="introduccion">
+      <div class="container intro__grid">
+        <div class="intro__sticky reveal">
+          <p class="section__number">01</p>
+          <h2>El panorama imbabureño</h2>
+        </div>
+
+        <div class="prose reveal">
+          <p class="lead">
+            En la provincia de Imbabura, caracterizada por su inmensa riqueza
+            cultural, turística y textil, el comercio informal se ha consolidado
+            como algo más que una simple estrategia de subsistencia frente a la
+            falta de empleo formal.
+          </p>
+          <p>
+            Hoy en día representa una estructura económica paralela que dinamiza
+            y, al mismo tiempo, tensiona los centros urbanos como Otavalo e
+            Ibarra.
+          </p>
+          <p>
+            La ocupación de aceras, plazas y la proliferación de ferias de venta
+            ambulante reflejan la necesidad apremiante de cientos de familias
+            por generar ingresos inmediatos. Esta realidad abre un debate
+            crucial sobre el uso del espacio público y los desafíos de la
+            planificación municipal.
+          </p>
+
+          <figure class="inline-figure">
+            <img
+              src="/img/zona-de-otavalo.jpeg"
+              alt="Zona comercial de Otavalo ocupada por comercio ambulante"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption>
+              Otavalo: las aceras y plazas se convierten en superficie comercial.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Datos ------------------------------------------------------------- -->
+    <section class="section datos" id="datos">
+      <div class="container">
+        <header class="datos__head reveal">
+          <p class="section__number">02</p>
+          <h2>Marco de datos y cifras oficiales</h2>
+          <p class="datos__intro">
+            Para comprender la magnitud de este fenómeno es vital mirar las
+            cifras que dibujan el panorama laboral a nivel nacional y local.
+          </p>
+        </header>
+
+        <ul class="cifras reveal">
+          {
+            cifras.map((c) => (
+              <li class="cifra">
+                <p class="cifra__value">{c.value}</p>
+                <p class="cifra__label">{c.label}</p>
+                <p class="cifra__detail">{c.detail}</p>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="causas reveal">
+          <h3>Causas principales del crecimiento</h3>
+          <ol class="causas__list">
+            {
+              causas.map((c, i) => (
+                <li>
+                  <span class="causas__index">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <strong>{c.title}</strong>
+                    <p>{c.text}</p>
+                  </div>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+
+        <blockquote class="quote reveal">
+          <p>
+            Más del <strong>50%</strong> de los trabajadores en Imbabura laboran
+            fuera del sector formal o en condiciones de subempleo.
+          </p>
+          <cite>Dato clave del reportaje</cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <Gallery />
+
+    <!-- Conclusión -------------------------------------------------------- -->
+    <section class="section conclusion" id="conclusion">
+      <div class="container conclusion__inner">
+        <div class="reveal">
+          <p class="section__number section__number--light">03</p>
+          <h2>Conclusión</h2>
+          <div class="prose">
+            <p>
+              El crecimiento del comercio informal en Imbabura no puede ni debe
+              entenderse como un problema aislado de ordenanzas urbanas. Por el
+              contrario, es el síntoma más visible de profundas transformaciones
+              estructurales en nuestro mercado de trabajo.
+            </p>
+            <p>
+              Lograr un equilibrio justo entre el derecho al trabajo, la
+              dignidad socioeconómica de los comerciantes y la organización
+              armónica de las ciudades sigue siendo, hoy por hoy, uno de los
+              mayores desafíos para los gobiernos locales y la sociedad en
+              general.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {
+      !dbOnline && (
+        <p class="db-warning">
+          La conexión con la base de datos no está disponible en este momento;
+          los likes y comentarios podrían no registrarse.
+        </p>
+      )
+    }
+
+    <Interactions likes={likes} liked={liked} comments={comments} />
+  </main>
+
+  <SiteFooter />
 </Layout>
+
+<style>
+  .section__number {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    color: var(--terracotta);
+    margin-bottom: var(--space-2xs);
+  }
+
+  .section__number--light {
+    color: var(--terracotta-soft);
+  }
+
+  /* Objetivo ------------------------------------------------------------- */
+
+  .objetivo {
+    background: var(--earth-100);
+    padding-block: var(--space-xl);
+  }
+
+  .objetivo__inner {
+    max-width: 900px;
+  }
+
+  .objetivo__text {
+    margin-top: var(--space-s);
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.35;
+    color: var(--navy-800);
+  }
+
+  .objetivo__text mark {
+    background: linear-gradient(
+      180deg,
+      transparent 62%,
+      color-mix(in srgb, var(--terracotta) 40%, transparent) 62%
+    );
+    color: inherit;
+  }
+
+  /* Introducción --------------------------------------------------------- */
+
+  .intro {
+    background: var(--surface);
+    border-block: 1px solid var(--earth-300);
+  }
+
+  .intro__grid {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .intro h2 {
+    font-size: var(--step-3);
+  }
+
+  .lead {
+    font-size: var(--step-1);
+    color: var(--navy-800);
+  }
+
+  .prose p {
+    color: var(--gray-700);
+  }
+
+  .prose .lead {
+    color: var(--navy-800);
+  }
+
+  .inline-figure {
+    margin: var(--space-l) 0 0;
+  }
+
+  .inline-figure img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-m);
+    transition:
+      transform 0.6s var(--ease),
+      box-shadow 0.6s var(--ease);
+  }
+
+  .inline-figure:hover img {
+    transform: scale(1.015);
+    box-shadow: var(--shadow-l);
+  }
+
+  .inline-figure figcaption {
+    margin-top: var(--space-2xs);
+    font-size: 0.78rem;
+    color: var(--gray-500);
+    border-left: 2px solid var(--terracotta);
+    padding-left: 0.6rem;
+  }
+
+  /* Datos ---------------------------------------------------------------- */
+
+  .datos {
+    background: var(--earth-100);
+  }
+
+  .datos__head {
+    max-width: var(--measure);
+    margin-bottom: var(--space-l);
+  }
+
+  .datos__head h2 {
+    font-size: var(--step-3);
+    margin-bottom: var(--space-xs);
+  }
+
+  .datos__intro {
+    color: var(--gray-700);
+  }
+
+  .cifras {
+    display: grid;
+    gap: var(--space-s);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .cifra {
+    padding: var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-m);
+    transition:
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease),
+      border-color 0.35s var(--ease);
+  }
+
+  .cifra:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--terracotta) 55%, transparent);
+    box-shadow: var(--shadow-m);
+  }
+
+  .cifra__value {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1;
+    color: var(--navy-900);
+  }
+
+  .cifra__label {
+    margin-top: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--terracotta-dark);
+  }
+
+  .cifra__detail {
+    margin-top: var(--space-xs);
+    font-size: var(--step--1);
+    color: var(--gray-700);
+  }
+
+  .causas {
+    margin-top: var(--space-xl);
+  }
+
+  .causas h3 {
+    font-size: var(--step-2);
+    margin-bottom: var(--space-s);
+  }
+
+  .causas__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .causas__list li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-s);
+    padding-bottom: var(--space-s);
+    border-bottom: 1px solid var(--earth-300);
+  }
+
+  .causas__index {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    color: var(--gray-300);
+    transition: color 0.3s var(--ease);
+  }
+
+  .causas__list li:hover .causas__index {
+    color: var(--terracotta);
+  }
+
+  .causas__list strong {
+    display: block;
+    font-size: var(--step-0);
+    color: var(--navy-900);
+    margin-bottom: 0.2rem;
+  }
+
+  .causas__list p {
+    font-size: var(--step--1);
+    color: var(--gray-700);
+    max-width: 60ch;
+  }
+
+  .quote {
+    margin: var(--space-xl) 0 0;
+    padding: var(--space-m);
+    background: var(--navy-800);
+    color: var(--earth-100);
+    border-radius: var(--radius-l);
+    border-left: 5px solid var(--terracotta);
+  }
+
+  .quote p {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.35;
+  }
+
+  .quote strong {
+    color: var(--terracotta-soft);
+  }
+
+  .quote cite {
+    display: block;
+    margin-top: var(--space-s);
+    font-size: 0.7rem;
+    font-style: normal;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--earth-200) 55%, transparent);
+  }
+
+  /* Conclusión ----------------------------------------------------------- */
+
+  .conclusion {
+    background: var(--navy-900);
+    color: var(--earth-200);
+  }
+
+  .conclusion__inner {
+    max-width: 820px;
+  }
+
+  .conclusion h2 {
+    font-size: var(--step-3);
+    color: var(--earth-100);
+    margin-bottom: var(--space-s);
+  }
+
+  .conclusion .prose p {
+    color: color-mix(in srgb, var(--earth-200) 82%, transparent);
+    font-size: var(--step-0);
+  }
+
+  /* Aviso ---------------------------------------------------------------- */
+
+  .db-warning {
+    max-width: var(--container);
+    margin: var(--space-m) auto 0;
+    padding: 0.8rem 1rem;
+    background: #fdf1e7;
+    border: 1px solid #e6c3a5;
+    border-radius: var(--radius-m);
+    color: #8a4b22;
+    font-size: var(--step--1);
+  }
+
+  /* Breakpoints ---------------------------------------------------------- */
+
+  @media (min-width: 40rem) {
+    .cifras {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-m);
+    }
+
+    .causas__list {
+      gap: var(--space-m);
+    }
+
+    .quote {
+      padding: var(--space-l);
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .intro__grid {
+      grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+      gap: var(--space-2xl);
+    }
+
+    .intro__sticky {
+      position: sticky;
+      top: 96px;
+      align-self: start;
+    }
+
+    .cifras {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

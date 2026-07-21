@@ -1,0 +1,430 @@
+---
+import Layout from "../layouts/Layout.astro";
+import StatCard from "../components/StatCard.astro";
+import BarChart from "../components/BarChart.astro";
+import PieChart from "../components/PieChart.astro";
+import { getStats, type Stats } from "../lib/db";
+import { isAuthenticated, isPasswordConfigured, login, logout } from "../lib/auth";
+
+export const prerender = false;
+
+let error = "";
+const configured = isPasswordConfigured();
+
+/* ------------------------------- Autenticación ------------------------- */
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+
+  if (form.get("action") === "logout") {
+    logout(Astro.cookies);
+    return Astro.redirect("/dashboard", 303);
+  }
+
+  const ok = await login(Astro.cookies, String(form.get("password") ?? ""));
+  if (ok) return Astro.redirect("/dashboard", 303);
+  error = configured
+    ? "Contraseña incorrecta."
+    : "Falta definir DASHBOARD_PASSWORD en las variables de entorno.";
+}
+
+const authed = await isAuthenticated(Astro.cookies);
+
+/* --------------------------------- Datos -------------------------------- */
+
+let stats: Stats | null = null;
+let dbError = "";
+
+if (authed) {
+  try {
+    stats = await getStats();
+  } catch (e) {
+    dbError = "No se pudo conectar con la base de datos Turso.";
+    console.error("[dashboard]", e);
+  }
+}
+
+const pct = (part: number, whole: number) =>
+  whole > 0 ? `${((part / whole) * 100).toFixed(1)}% de las visitas` : "Sin visitas aún";
+
+const last7 = (series: { count: number }[]) =>
+  series.slice(-7).reduce((a, b) => a + b.count, 0);
+---
+
+<Layout title="Panel de estadísticas — Detrás del Puesto">
+  <main class="dash">
+    {
+      !authed ? (
+        <section class="gate">
+          <div class="gate__card">
+            <p class="eyebrow">Detrás del Puesto</p>
+            <h1>Panel de estadísticas</h1>
+            <p class="gate__text">
+              Esta sección es privada. Ingresa la clave del equipo para ver las
+              métricas del reportaje.
+            </p>
+
+            <form method="POST" class="gate__form">
+              <label for="password">Clave de acceso</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                autocomplete="current-password"
+                placeholder="••••••••"
+              />
+              {error && <p class="gate__error">{error}</p>}
+              <button type="submit" class="btn btn--primary">
+                Entrar al panel
+              </button>
+            </form>
+
+            <a class="gate__back" href="/">← Volver al reportaje</a>
+          </div>
+        </section>
+      ) : (
+        <div class="container dash__inner">
+          <header class="dash__head">
+            <div>
+              <p class="eyebrow">Detrás del Puesto</p>
+              <h1>Panel de estadísticas</h1>
+              <p class="dash__sub">
+                Actividad de la comunidad sobre el reportaje del comercio
+                informal en Imbabura.
+              </p>
+            </div>
+            <div class="dash__actions">
+              <a class="btn btn--ghost" href="/">Ver reportaje</a>
+              <form method="POST">
+                <input type="hidden" name="action" value="logout" />
+                <button type="submit" class="btn btn--ghost">Salir</button>
+              </form>
+            </div>
+          </header>
+
+          {dbError && <p class="dash__error">{dbError}</p>}
+
+          {stats && (
+            <>
+              <section class="cards" aria-label="Resumen de métricas">
+                <StatCard
+                  label="Visitas totales"
+                  value={stats.totalVisits}
+                  hint={`${last7(stats.visitsByDay)} en los últimos 7 días`}
+                  accent="navy"
+                  icon="eye"
+                />
+                <StatCard
+                  label="Visitantes únicos"
+                  value={stats.uniqueVisitors}
+                  hint="Identificados de forma anónima"
+                  accent="gray"
+                  icon="users"
+                />
+                <StatCard
+                  label="Me gusta"
+                  value={stats.totalLikes}
+                  hint={pct(stats.totalLikes, stats.totalVisits)}
+                  accent="terracotta"
+                  icon="heart"
+                />
+                <StatCard
+                  label="Comentarios"
+                  value={stats.totalComments}
+                  hint={pct(stats.totalComments, stats.totalVisits)}
+                  accent="terracotta"
+                  icon="chat"
+                />
+              </section>
+
+              <section class="charts">
+                <BarChart
+                  title="Actividad de los últimos 14 días"
+                  subtitle="Visitas, likes y comentarios registrados por día"
+                  series={[
+                    { name: "Visitas", color: "#1e3550", data: stats.visitsByDay },
+                    { name: "Likes", color: "#c8785a", data: stats.likesByDay },
+                    {
+                      name: "Comentarios",
+                      color: "#8fa3b8",
+                      data: stats.commentsByDay,
+                    },
+                  ]}
+                />
+
+                <div class="charts__row">
+                  <PieChart
+                    title="Composición de la interacción"
+                    subtitle="Cómo se reparte la audiencia del reportaje"
+                    data={stats.engagementSplit}
+                    colors={["#d8d3ca", "#c8785a", "#1e3550"]}
+                  />
+
+                  <PieChart
+                    title="Origen del tráfico"
+                    subtitle="Principales fuentes de visita"
+                    data={
+                      stats.topReferrers.length
+                        ? stats.topReferrers
+                        : [{ label: "Directo", value: 0 }]
+                    }
+                    colors={["#1e3550", "#c8785a", "#737b86", "#e0a58c", "#2c4967"]}
+                  />
+                </div>
+              </section>
+
+              <section class="recent">
+                <h2>Últimos comentarios</h2>
+                {stats.recentComments.length === 0 ? (
+                  <p class="recent__empty">Todavía no hay comentarios.</p>
+                ) : (
+                  <ul class="recent__list">
+                    {stats.recentComments.map((c) => (
+                      <li>
+                        <div class="recent__meta">
+                          <strong>{c.author}</strong>
+                          <time datetime={c.created_at}>{c.created_at}</time>
+                        </div>
+                        <p>{c.body}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            </>
+          )}
+        </div>
+      )
+    }
+  </main>
+</Layout>
+
+<style>
+  .dash {
+    min-height: 100svh;
+    background: var(--earth-100);
+    padding-block: var(--space-l) var(--space-2xl);
+  }
+
+  /* Pantalla de acceso --------------------------------------------------- */
+
+  .gate {
+    display: grid;
+    place-items: center;
+    min-height: 84svh;
+    padding: var(--space-s);
+  }
+
+  .gate__card {
+    width: 100%;
+    max-width: 420px;
+    padding: var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-m);
+  }
+
+  .gate__card h1 {
+    font-size: var(--step-2);
+    margin-block: var(--space-2xs) var(--space-xs);
+  }
+
+  .gate__text {
+    font-size: var(--step--1);
+    color: var(--gray-500);
+  }
+
+  .gate__form {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: var(--space-m);
+  }
+
+  .gate__form label {
+    font-size: var(--step--1);
+    font-weight: 600;
+  }
+
+  .gate__form input {
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-m);
+    background: var(--earth-100);
+    transition:
+      border-color 0.25s var(--ease),
+      box-shadow 0.25s var(--ease);
+  }
+
+  .gate__form input:focus {
+    outline: none;
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--terracotta) 18%, transparent);
+  }
+
+  .gate__form button {
+    margin-top: var(--space-2xs);
+    width: 100%;
+  }
+
+  .gate__error {
+    font-size: var(--step--1);
+    color: #b4442f;
+  }
+
+  .gate__back {
+    display: inline-block;
+    margin-top: var(--space-m);
+    font-size: var(--step--1);
+    color: var(--gray-500);
+    text-decoration: none;
+  }
+
+  .gate__back:hover {
+    color: var(--terracotta-dark);
+  }
+
+  /* Panel ---------------------------------------------------------------- */
+
+  .dash__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+    padding-bottom: var(--space-m);
+    margin-bottom: var(--space-l);
+    border-bottom: 1px solid var(--earth-300);
+  }
+
+  .dash__head h1 {
+    font-size: var(--step-3);
+    margin-block: var(--space-2xs) var(--space-2xs);
+  }
+
+  .dash__sub {
+    font-size: var(--step--1);
+    color: var(--gray-500);
+    max-width: 52ch;
+  }
+
+  .dash__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  .dash__error {
+    padding: 0.8rem 1rem;
+    margin-bottom: var(--space-m);
+    background: #fdf1e7;
+    border: 1px solid #e6c3a5;
+    border-radius: var(--radius-m);
+    color: #8a4b22;
+    font-size: var(--step--1);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-s);
+  }
+
+  .charts {
+    display: grid;
+    gap: var(--space-m);
+    margin-top: var(--space-l);
+  }
+
+  .charts__row {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  /* Comentarios recientes ------------------------------------------------ */
+
+  .recent {
+    margin-top: var(--space-xl);
+  }
+
+  .recent h2 {
+    font-size: var(--step-2);
+    margin-bottom: var(--space-s);
+  }
+
+  .recent__empty {
+    font-size: var(--step--1);
+    color: var(--gray-500);
+  }
+
+  .recent__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .recent__list li {
+    padding: var(--space-s);
+    background: var(--surface);
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-m);
+    transition:
+      transform 0.25s var(--ease),
+      box-shadow 0.25s var(--ease);
+  }
+
+  .recent__list li:hover {
+    transform: translateX(3px);
+    box-shadow: var(--shadow-s);
+  }
+
+  .recent__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: baseline;
+    margin-bottom: 0.25rem;
+  }
+
+  .recent__meta strong {
+    font-size: var(--step--1);
+  }
+
+  .recent__meta time {
+    font-size: 0.7rem;
+    color: var(--gray-500);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .recent__list p {
+    font-size: var(--step--1);
+    color: var(--gray-700);
+    overflow-wrap: anywhere;
+  }
+
+  /* Breakpoints ---------------------------------------------------------- */
+
+  @media (min-width: 40rem) {
+    .cards {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-m);
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .dash__head {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .cards {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .charts__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

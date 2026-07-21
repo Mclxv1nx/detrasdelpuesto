@@ -1,0 +1,158 @@
+---
+const links = [
+  { href: "#introduccion", label: "Introducción" },
+  { href: "#datos", label: "Datos" },
+  { href: "#galeria", label: "Galería" },
+  { href: "#conclusion", label: "Conclusión" },
+  { href: "#conversacion", label: "Conversación" },
+];
+---
+
+<header class="header" data-header>
+  <div class="container header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true"></span>
+      <span class="brand__text">
+        <strong>Detrás del Puesto</strong>
+        <small>Reportaje · Imbabura</small>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Secciones del reportaje">
+      <ul>
+        {links.map((l) => (
+          <li><a href={l.href}>{l.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector("[data-header]");
+  const onScroll = () =>
+    header?.classList.toggle("is-scrolled", window.scrollY > 24);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--earth-100) 82%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid transparent;
+    transition:
+      border-color 0.3s var(--ease),
+      background-color 0.3s var(--ease);
+  }
+
+  .header.is-scrolled {
+    border-bottom-color: var(--earth-300);
+    background: color-mix(in srgb, var(--earth-100) 94%, transparent);
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-s);
+    min-height: 64px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    color: var(--navy-900);
+  }
+
+  .brand__mark {
+    width: 12px;
+    height: 24px;
+    border-radius: 999px;
+    background: linear-gradient(
+      180deg,
+      var(--terracotta) 0%,
+      var(--navy-700) 100%
+    );
+    transition: transform 0.4s var(--ease);
+  }
+
+  .brand:hover .brand__mark {
+    transform: rotate(-12deg) scaleY(1.15);
+  }
+
+  .brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .brand__text strong {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .brand__text small {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+  }
+
+  /* Mobile-first: la navegación se oculta y el usuario navega por scroll. */
+  .nav {
+    display: none;
+  }
+
+  @media (min-width: 62rem) {
+    .nav {
+      display: block;
+    }
+
+    .nav ul {
+      display: flex;
+      gap: var(--space-m);
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav a {
+      position: relative;
+      font-size: var(--step--1);
+      font-weight: 500;
+      color: var(--gray-700);
+      text-decoration: none;
+      padding-block: 0.35rem;
+      transition: color 0.25s var(--ease);
+    }
+
+    .nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--terracotta);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.35s var(--ease);
+    }
+
+    .nav a:hover {
+      color: var(--navy-900);
+    }
+
+    .nav a:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
+</style>

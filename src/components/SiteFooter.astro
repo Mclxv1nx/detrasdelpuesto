@@ -1,0 +1,287 @@
+---
+const socials = [
+  {
+    name: "Instagram",
+    handle: "@detras_delpuesto",
+    href: "https://www.instagram.com/detras_delpuesto?igsh=MWEzemw2ZHRrYWlldg==",
+    path: "M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm5 5.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Zm5.8-1.3a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z",
+  },
+  {
+    name: "TikTok",
+    handle: "@detrasdelpuesto",
+    href: "https://tiktok.com/@detrasdelpuesto",
+    path: "M16.5 2h-3v13a2.8 2.8 0 1 1-2.8-2.8c.3 0 .5 0 .8.1V9.2a6 6 0 1 0 5 5.9V8.5a6.6 6.6 0 0 0 4 1.3V6.7a3.6 3.6 0 0 1-4-3.4V2Z",
+  },
+  {
+    name: "Facebook",
+    handle: "Detrás del Puesto",
+    href: "https://www.facebook.com/share/1FRVVHbwLF/",
+    path: "M13.5 22v-8h2.7l.4-3.2h-3.1V8.7c0-.9.3-1.6 1.6-1.6h1.6V4.2c-.3 0-1.3-.1-2.4-.1-2.4 0-4.1 1.5-4.1 4.2v2.5H7.4V14h2.8v8h3.3Z",
+  },
+  {
+    name: "YouTube",
+    handle: "@detrasdelpuesto",
+    href: "https://youtube.com/@detrasdelpuesto-z3n?si=CZ8-Ct9OZUiH643Y",
+    path: "M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15.1V8.9l5.2 3.1-5.2 3.1Z",
+  },
+];
+
+const team = [
+  { name: "Damián Reyes", photo: "/img/damian-reyes.jpeg" },
+  { name: "Flor Lema", photo: "/img/flor-lema.jpeg" },
+  { name: "Alexis Ulcuango", photo: "/img/alexis.jpeg" },
+];
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer" id="creditos">
+  <div class="container">
+    <div class="footer__top reveal">
+      <div class="footer__intro">
+        <p class="eyebrow eyebrow--light">Detrás del Puesto</p>
+        <h2>Conoce más sobre esta realidad</h2>
+        <p>
+          Seguimos documentando el comercio informal en Imbabura a través de
+          nuestras plataformas digitales.
+        </p>
+      </div>
+
+      <ul class="socials">
+        {
+          socials.map((s) => (
+            <li>
+              <a href={s.href} target="_blank" rel="noopener noreferrer">
+                <span class="socials__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d={s.path} />
+                  </svg>
+                </span>
+                <span class="socials__text">
+                  <strong>{s.name}</strong>
+                  <small>{s.handle}</small>
+                </span>
+                <span class="socials__arrow" aria-hidden="true">↗</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="credits reveal">
+      <p class="credits__label">Créditos de la investigación</p>
+      <ul class="credits__list">
+        {
+          team.map((p) => (
+            <li class="person">
+              <img src={p.photo} alt={p.name} loading="lazy" decoding="async" />
+              <span>{p.name}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="footer__bottom">
+      <p>© {year} Detrás del Puesto · Provincia de Imbabura, Ecuador.</p>
+      <a href="/dashboard">Panel de estadísticas</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--navy-900);
+    color: var(--earth-200);
+    padding-block: var(--space-2xl) var(--space-l);
+  }
+
+  .eyebrow--light {
+    color: var(--terracotta-soft);
+  }
+
+  .footer__top {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .footer__intro h2 {
+    font-size: var(--step-3);
+    color: var(--earth-100);
+    margin-block: var(--space-2xs) var(--space-xs);
+  }
+
+  .footer__intro p {
+    max-width: 40ch;
+    color: color-mix(in srgb, var(--earth-200) 72%, transparent);
+    font-size: var(--step--1);
+  }
+
+  /* Redes sociales ------------------------------------------------------ */
+
+  .socials {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .socials a {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 1rem;
+    min-height: 60px;
+    border: 1px solid color-mix(in srgb, var(--earth-100) 14%, transparent);
+    border-radius: var(--radius-m);
+    color: var(--earth-100);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--earth-100) 3%, transparent);
+    transition:
+      background-color 0.3s var(--ease),
+      border-color 0.3s var(--ease),
+      transform 0.3s var(--ease);
+  }
+
+  .socials a:hover {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+    transform: translateY(-3px);
+  }
+
+  .socials__icon svg {
+    width: 22px;
+    height: 22px;
+    fill: var(--terracotta-soft);
+    transition: fill 0.3s var(--ease);
+  }
+
+  .socials a:hover .socials__icon svg {
+    fill: #fff;
+  }
+
+  .socials__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    flex: 1;
+  }
+
+  .socials__text strong {
+    font-size: var(--step--1);
+  }
+
+  .socials__text small {
+    font-size: 0.72rem;
+    color: color-mix(in srgb, var(--earth-200) 60%, transparent);
+    transition: color 0.3s var(--ease);
+  }
+
+  .socials a:hover .socials__text small {
+    color: color-mix(in srgb, #fff 80%, transparent);
+  }
+
+  .socials__arrow {
+    opacity: 0;
+    translate: -6px 0;
+    transition:
+      opacity 0.3s var(--ease),
+      translate 0.3s var(--ease);
+  }
+
+  .socials a:hover .socials__arrow {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* Créditos ------------------------------------------------------------ */
+
+  .credits {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-m);
+    border-top: 1px solid color-mix(in srgb, var(--earth-100) 12%, transparent);
+  }
+
+  .credits__label {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--earth-200) 55%, transparent);
+    margin-bottom: var(--space-s);
+  }
+
+  .credits__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+  }
+
+  .person {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: var(--step--1);
+    font-weight: 500;
+  }
+
+  .person img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    filter: grayscale(1);
+    border: 2px solid color-mix(in srgb, var(--earth-100) 18%, transparent);
+    transition:
+      filter 0.4s var(--ease),
+      transform 0.4s var(--ease),
+      border-color 0.4s var(--ease);
+  }
+
+  .person:hover img {
+    filter: grayscale(0);
+    transform: scale(1.08);
+    border-color: var(--terracotta);
+  }
+
+  /* Base ---------------------------------------------------------------- */
+
+  .footer__bottom {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-s);
+    border-top: 1px solid color-mix(in srgb, var(--earth-100) 12%, transparent);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: color-mix(in srgb, var(--earth-200) 55%, transparent);
+  }
+
+  .footer__bottom a {
+    color: var(--terracotta-soft);
+    text-decoration: none;
+  }
+
+  .footer__bottom a:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 48rem) {
+    .socials {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .footer__top {
+      grid-template-columns: 1fr 1.1fr;
+      gap: var(--space-2xl);
+      align-items: center;
+    }
+  }
+</style>

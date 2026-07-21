@@ -1,0 +1,226 @@
+---
+interface Props {
+  likes: number;
+  comments: number;
+}
+const { likes, comments } = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero__media">
+    <img
+      src="/img/portada.jpeg"
+      alt="Comerciante informal atendiendo su puesto en una calle de Imbabura"
+      width="1600"
+      height="1067"
+      fetchpriority="high"
+      decoding="async"
+    />
+    <div class="hero__scrim" aria-hidden="true"></div>
+  </div>
+
+  <div class="container hero__content">
+    <p class="hero__eyebrow">Enfoque territorial · Otavalo e Ibarra</p>
+    <h1 class="hero__title">
+      Comercio informal:<br /><em>una realidad que crece</em>
+    </h1>
+    <p class="hero__lead">
+      Una estructura económica paralela que dinamiza y, al mismo tiempo,
+      tensiona los centros urbanos de la provincia de Imbabura.
+    </p>
+
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="#introduccion">Leer el reportaje</a>
+      <a class="btn btn--ghost btn--light" href="#conversacion">
+        Únete a la conversación
+      </a>
+    </div>
+
+    <dl class="hero__meta">
+      <div>
+        <dt>Publicado por</dt>
+        <dd>Damián Reyes · Flor Lema · Alexis Ulcuango</dd>
+      </div>
+      <div>
+        <dt>Comunidad</dt>
+        <dd>{likes} me gusta · {comments} comentarios</dd>
+      </div>
+    </dl>
+  </div>
+
+  <a class="hero__scroll" href="#introduccion" aria-label="Ir al contenido">
+    <span></span>
+  </a>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: 88svh;
+    padding-block: var(--space-2xl) var(--space-xl);
+    overflow: hidden;
+    color: var(--earth-100);
+    isolation: isolate;
+  }
+
+  .hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+  }
+
+  .hero__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+    animation: heroZoom 18s var(--ease) forwards;
+  }
+
+  @keyframes heroZoom {
+    from {
+      transform: scale(1.08);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        180deg,
+        rgb(16 28 46 / 0.55) 0%,
+        rgb(16 28 46 / 0.35) 35%,
+        rgb(16 28 46 / 0.88) 100%
+      ),
+      radial-gradient(
+        120% 80% at 15% 90%,
+        rgb(200 120 90 / 0.35) 0%,
+        transparent 60%
+      );
+  }
+
+  .hero__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__eyebrow {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--terracotta-soft);
+    margin-bottom: var(--space-s);
+  }
+
+  .hero__title {
+    font-size: var(--step-4);
+    max-width: 16ch;
+    margin-bottom: var(--space-s);
+  }
+
+  .hero__title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--terracotta-soft);
+  }
+
+  .hero__lead {
+    max-width: 46ch;
+    font-size: var(--step-1);
+    color: color-mix(in srgb, var(--earth-100) 88%, transparent);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-l);
+  }
+
+  .btn--light {
+    border-color: color-mix(in srgb, var(--earth-100) 45%, transparent);
+    color: var(--earth-100);
+  }
+
+  .btn--light:hover {
+    background: var(--earth-100);
+    color: var(--navy-900);
+    border-color: var(--earth-100);
+  }
+
+  .hero__meta {
+    display: grid;
+    gap: var(--space-s);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-s);
+    border-top: 1px solid color-mix(in srgb, var(--earth-100) 25%, transparent);
+  }
+
+  .hero__meta dt {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--earth-100) 60%, transparent);
+    margin-bottom: 0.15rem;
+  }
+
+  .hero__meta dd {
+    margin: 0;
+    font-size: var(--step--1);
+    font-weight: 500;
+  }
+
+  .hero__scroll {
+    position: absolute;
+    left: 50%;
+    bottom: var(--space-s);
+    translate: -50% 0;
+    width: 26px;
+    height: 42px;
+    border: 1.5px solid color-mix(in srgb, var(--earth-100) 45%, transparent);
+    border-radius: 999px;
+    display: none;
+  }
+
+  .hero__scroll span {
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    translate: -50% 0;
+    width: 3px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--terracotta-soft);
+    animation: scrollHint 1.8s var(--ease) infinite;
+  }
+
+  @keyframes scrollHint {
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    60% {
+      transform: translateY(14px);
+      opacity: 0.2;
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .hero__meta {
+      grid-template-columns: repeat(2, minmax(0, max-content));
+      gap: var(--space-2xl);
+    }
+
+    .hero__scroll {
+      display: block;
+    }
+  }
+</style>

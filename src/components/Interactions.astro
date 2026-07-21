@@ -1,0 +1,589 @@
+---
+import type { Comment } from "../lib/db";
+
+interface Props {
+  likes: number;
+  liked: boolean;
+  comments: Comment[];
+}
+
+const { likes, liked, comments } = Astro.props;
+
+const fmt = new Intl.DateTimeFormat("es-EC", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+function formatDate(value: string) {
+  const iso = value.includes("T") ? value : value.replace(" ", "T") + "Z";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? value : fmt.format(d);
+}
+
+function initials(name: string) {
+  return name.trim().slice(0, 1).toUpperCase() || "?";
+}
+---
+
+<section class="section interactions" id="conversacion">
+  <div class="container interactions__inner">
+    <header class="reveal">
+      <p class="eyebrow">Únete a la conversación</p>
+      <h2>¿Qué opinas de esta realidad?</h2>
+      <p class="interactions__intro">
+        Tu punto de vista ayuda a construir un debate más completo sobre el
+        derecho al trabajo y la organización de nuestras ciudades.
+      </p>
+    </header>
+
+    <!-- Like ------------------------------------------------------------ -->
+    <div class="likebar reveal">
+      <button
+        type="button"
+        class="like"
+        data-like
+        data-liked={liked ? "true" : "false"}
+        aria-pressed={liked ? "true" : "false"}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="like__icon">
+          <path
+            d="M12 20.7 4.6 13.3a4.8 4.8 0 0 1 0-6.8 4.8 4.8 0 0 1 6.8 0l.6.6.6-.6a4.8 4.8 0 0 1 6.8 0 4.8 4.8 0 0 1 0 6.8Z"
+          ></path>
+        </svg>
+        <span class="like__label">Me gusta este reportaje</span>
+        <span class="like__count" data-like-count>{likes}</span>
+      </button>
+      <p class="likebar__hint" data-like-hint>
+        {liked ? "Gracias por tu apoyo." : "Un clic basta. Puedes deshacerlo."}
+      </p>
+    </div>
+
+    <!-- Formulario ------------------------------------------------------ -->
+    <form class="form reveal" data-comment-form novalidate>
+      <div class="field">
+        <label for="author">Tu nombre</label>
+        <input
+          id="author"
+          name="author"
+          type="text"
+          maxlength="60"
+          required
+          autocomplete="name"
+          placeholder="Ej. María Chicaiza"
+        />
+      </div>
+
+      <div class="field">
+        <label for="body">Tu comentario</label>
+        <textarea
+          id="body"
+          name="body"
+          rows="4"
+          maxlength="1000"
+          required
+          placeholder="Comparte tu experiencia o tu punto de vista sobre el comercio informal en Imbabura…"
+        ></textarea>
+        <span class="field__counter" data-counter>0 / 1000</span>
+      </div>
+
+      <div class="form__actions">
+        <button type="submit" class="btn btn--primary" data-submit>
+          Publicar comentario
+        </button>
+        <p class="form__status" role="status" data-status></p>
+      </div>
+    </form>
+
+    <!-- Lista ----------------------------------------------------------- -->
+    <div class="thread reveal">
+      <h3 class="thread__title">
+        Comentarios <span data-comment-count>({comments.length})</span>
+      </h3>
+
+      <p class="thread__empty" data-empty hidden={comments.length > 0}>
+        Aún no hay comentarios. Sé la primera persona en opinar.
+      </p>
+
+      <ol class="thread__list" data-comment-list>
+        {
+          comments.map((c) => (
+            <li class="comment">
+              <span class="comment__avatar" aria-hidden="true">
+                {initials(c.author)}
+              </span>
+              <div class="comment__body">
+                <p class="comment__meta">
+                  <strong>{c.author}</strong>
+                  <time datetime={c.created_at}>{formatDate(c.created_at)}</time>
+                </p>
+                <p class="comment__text">{c.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  /* ---------------------------------------------------------------- Likes */
+  const likeBtn = document.querySelector<HTMLButtonElement>("[data-like]");
+  const likeCount = document.querySelector<HTMLElement>("[data-like-count]");
+  const likeHint = document.querySelector<HTMLElement>("[data-like-hint]");
+
+  likeBtn?.addEventListener("click", async () => {
+    likeBtn.disabled = true;
+    try {
+      // El Content-Type explícito evita el bloqueo CSRF de Astro,
+      // que trata las peticiones sin tipo como envíos de formulario.
+      const res = await fetch("/api/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      if (!res.ok) throw new Error("fail");
+      const data = (await res.json()) as { likes: number; liked: boolean };
+
+      if (likeCount) likeCount.textContent = String(data.likes);
+      likeBtn.dataset.liked = String(data.liked);
+      likeBtn.setAttribute("aria-pressed", String(data.liked));
+      if (likeHint)
+        likeHint.textContent = data.liked
+          ? "Gracias por tu apoyo."
+          : "Un clic basta. Puedes deshacerlo.";
+
+      if (data.liked) {
+        likeBtn.classList.remove("is-pop");
+        void likeBtn.offsetWidth;
+        likeBtn.classList.add("is-pop");
+      }
+    } catch {
+      if (likeHint)
+        likeHint.textContent = "No pudimos registrar tu like. Intenta de nuevo.";
+    } finally {
+      likeBtn.disabled = false;
+    }
+  });
+
+  /* --------------------------------------------------------- Comentarios */
+  const form = document.querySelector<HTMLFormElement>("[data-comment-form]");
+  const list = document.querySelector<HTMLOListElement>("[data-comment-list]");
+  const status = document.querySelector<HTMLElement>("[data-status]");
+  const submit = document.querySelector<HTMLButtonElement>("[data-submit]");
+  const counter = document.querySelector<HTMLElement>("[data-counter]");
+  const empty = document.querySelector<HTMLElement>("[data-empty]");
+  const countLabel = document.querySelector<HTMLElement>("[data-comment-count]");
+  const bodyInput = document.querySelector<HTMLTextAreaElement>("#body");
+
+  bodyInput?.addEventListener("input", () => {
+    if (counter) counter.textContent = `${bodyInput.value.length} / 1000`;
+  });
+
+  const dateFmt = new Intl.DateTimeFormat("es-EC", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  function renderComment(c: {
+    id: number;
+    author: string;
+    body: string;
+    created_at: string;
+  }) {
+    const li = document.createElement("li");
+    li.className = "comment is-new";
+
+    const avatar = document.createElement("span");
+    avatar.className = "comment__avatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.textContent = c.author.trim().slice(0, 1).toUpperCase() || "?";
+
+    const body = document.createElement("div");
+    body.className = "comment__body";
+
+    const meta = document.createElement("p");
+    meta.className = "comment__meta";
+    const strong = document.createElement("strong");
+    strong.textContent = c.author;
+    const time = document.createElement("time");
+    time.dateTime = c.created_at;
+    const iso = c.created_at.includes("T")
+      ? c.created_at
+      : c.created_at.replace(" ", "T") + "Z";
+    const parsed = new Date(iso);
+    time.textContent = Number.isNaN(parsed.getTime())
+      ? c.created_at
+      : dateFmt.format(parsed);
+    meta.append(strong, time);
+
+    const text = document.createElement("p");
+    text.className = "comment__text";
+    text.textContent = c.body; // textContent evita cualquier inyección de HTML
+
+    body.append(meta, text);
+    li.append(avatar, body);
+    return li;
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const author = String(data.get("author") ?? "").trim();
+    const body = String(data.get("body") ?? "").trim();
+
+    if (author.length < 2 || body.length < 3) {
+      if (status) {
+        status.textContent = "Escribe tu nombre y un comentario un poco más largo.";
+        status.dataset.tone = "error";
+      }
+      return;
+    }
+
+    if (submit) submit.disabled = true;
+    if (status) {
+      status.textContent = "Publicando…";
+      status.dataset.tone = "";
+    }
+
+    try {
+      const res = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author, body }),
+      });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.error ?? "fail");
+
+      list?.prepend(renderComment(payload.comment));
+      empty?.setAttribute("hidden", "");
+      if (countLabel && list)
+        countLabel.textContent = `(${list.children.length})`;
+      form.reset();
+      if (counter) counter.textContent = "0 / 1000";
+      if (status) {
+        status.textContent = "¡Gracias! Tu comentario ya está publicado.";
+        status.dataset.tone = "ok";
+      }
+    } catch (err) {
+      if (status) {
+        status.textContent =
+          err instanceof Error && err.message !== "fail"
+            ? err.message
+            : "No pudimos publicar tu comentario. Intenta de nuevo.";
+        status.dataset.tone = "error";
+      }
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .interactions {
+    background: var(--earth-100);
+  }
+
+  .interactions__inner {
+    max-width: 720px;
+  }
+
+  .interactions h2 {
+    font-size: var(--step-3);
+    margin-block: var(--space-2xs) var(--space-xs);
+  }
+
+  .interactions__intro {
+    color: var(--gray-700);
+  }
+
+  /* Like ---------------------------------------------------------------- */
+
+  .likebar {
+    margin-top: var(--space-l);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    align-items: flex-start;
+  }
+
+  .like {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 52px;
+    padding: 0.6rem 1.1rem 0.6rem 0.9rem;
+    border: 1px solid var(--earth-300);
+    border-radius: 999px;
+    background: var(--surface);
+    box-shadow: var(--shadow-s);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--step--1);
+    color: var(--navy-800);
+    transition:
+      transform 0.25s var(--ease),
+      border-color 0.25s var(--ease),
+      box-shadow 0.25s var(--ease);
+  }
+
+  .like:hover {
+    transform: translateY(-2px);
+    border-color: var(--terracotta);
+    box-shadow: var(--shadow-m);
+  }
+
+  .like__icon {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: var(--terracotta);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    transition:
+      fill 0.3s var(--ease),
+      transform 0.3s var(--ease);
+  }
+
+  .like[data-liked="true"] .like__icon {
+    fill: var(--terracotta);
+  }
+
+  .like:hover .like__icon {
+    transform: scale(1.12);
+  }
+
+  .like__count {
+    min-width: 2.25rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: var(--earth-200);
+    color: var(--navy-900);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .like.is-pop {
+    animation: pop 0.45s var(--ease);
+  }
+
+  @keyframes pop {
+    40% {
+      transform: scale(1.06) translateY(-3px);
+    }
+    100% {
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .likebar__hint {
+    font-size: var(--step--1);
+    color: var(--gray-500);
+    padding-left: 0.4rem;
+  }
+
+  /* Formulario ---------------------------------------------------------- */
+
+  .form {
+    margin-top: var(--space-l);
+    display: grid;
+    gap: var(--space-s);
+    padding: var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-s);
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+    position: relative;
+  }
+
+  .field label {
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--navy-800);
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-m);
+    background: var(--earth-100);
+    resize: vertical;
+    transition:
+      border-color 0.25s var(--ease),
+      background-color 0.25s var(--ease),
+      box-shadow 0.25s var(--ease);
+  }
+
+  .field input::placeholder,
+  .field textarea::placeholder {
+    color: var(--gray-300);
+  }
+
+  .field input:hover,
+  .field textarea:hover {
+    border-color: var(--gray-300);
+  }
+
+  .field input:focus,
+  .field textarea:focus {
+    outline: none;
+    background: var(--surface);
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--terracotta) 18%, transparent);
+  }
+
+  .field__counter {
+    justify-self: end;
+    font-size: 0.72rem;
+    color: var(--gray-500);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .form__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    align-items: flex-start;
+  }
+
+  .form__status {
+    font-size: var(--step--1);
+    color: var(--gray-500);
+    min-height: 1.4em;
+  }
+
+  .form__status[data-tone="ok"] {
+    color: #2f7a52;
+  }
+
+  .form__status[data-tone="error"] {
+    color: #b4442f;
+  }
+
+  /* Hilo ---------------------------------------------------------------- */
+
+  .thread {
+    margin-top: var(--space-xl);
+  }
+
+  .thread__title {
+    font-size: var(--step-1);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--earth-300);
+  }
+
+  .thread__title span {
+    color: var(--gray-500);
+    font-family: var(--font-body);
+    font-size: var(--step--1);
+    font-weight: 500;
+  }
+
+  .thread__empty {
+    margin-top: var(--space-s);
+    color: var(--gray-500);
+    font-size: var(--step--1);
+  }
+
+  .thread__list {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-s) 0 0;
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .comment {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.85rem;
+    padding: var(--space-s);
+    border-radius: var(--radius-m);
+    background: var(--surface);
+    border: 1px solid transparent;
+    transition:
+      border-color 0.3s var(--ease),
+      transform 0.3s var(--ease),
+      box-shadow 0.3s var(--ease);
+  }
+
+  .comment:hover {
+    border-color: var(--earth-300);
+    transform: translateX(3px);
+    box-shadow: var(--shadow-s);
+  }
+
+  .comment__avatar {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--navy-700);
+    color: var(--earth-100);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .comment__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .comment__meta strong {
+    font-size: var(--step--1);
+    color: var(--navy-900);
+  }
+
+  .comment__meta time {
+    font-size: 0.72rem;
+    color: var(--gray-500);
+  }
+
+  .comment__text {
+    font-size: var(--step--1);
+    color: var(--gray-700);
+    overflow-wrap: anywhere;
+  }
+
+  .comment.is-new {
+    animation: slideIn 0.5s var(--ease);
+    border-color: color-mix(in srgb, var(--terracotta) 45%, transparent);
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (min-width: 40rem) {
+    .form {
+      padding: var(--space-l);
+    }
+
+    .form__actions {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-m);
+    }
+  }
+</style>

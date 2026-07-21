@@ -1,0 +1,314 @@
+---
+interface Series {
+  name: string;
+  color: string;
+  data: { day: string; count: number }[];
+}
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  series: Series[];
+}
+
+const { title, subtitle, series } = Astro.props;
+
+const days = series[0]?.data.map((d) => d.day) ?? [];
+const max = Math.max(
+  1,
+  ...series.flatMap((s) => s.data.map((d) => d.count)),
+);
+
+// Escala redondeada hacia arriba para que la cuadrícula quede limpia.
+const step = Math.max(1, Math.ceil(max / 4));
+const top = step * 4;
+const ticks = [4, 3, 2, 1, 0].map((i) => i * step);
+
+const dayFmt = new Intl.DateTimeFormat("es-EC", {
+  day: "2-digit",
+  month: "short",
+});
+
+function shortDay(iso: string) {
+  const d = new Date(iso + "T00:00:00Z");
+  return Number.isNaN(d.getTime()) ? iso : dayFmt.format(d);
+}
+---
+
+<figure class="chart">
+  <figcaption class="chart__head">
+    <div>
+      <h3>{title}</h3>
+      {subtitle && <p>{subtitle}</p>}
+    </div>
+    <ul class="legend">
+      {
+        series.map((s) => (
+          <li>
+            <span class="legend__dot" style={`background:${s.color}`} />
+            {s.name}
+          </li>
+        ))
+      }
+    </ul>
+  </figcaption>
+
+  <div class="chart__body">
+    <ul class="axis-y" aria-hidden="true">
+      {ticks.map((t) => <li>{t}</li>)}
+    </ul>
+
+    <div class="plot">
+      <div class="grid" aria-hidden="true">
+        {Array.from({ length: 5 }).map(() => <span />)}
+      </div>
+
+      <ol class="cols">
+        {
+          days.map((day, i) => (
+            <li class="col">
+              <div class="col__bars">
+                {series.map((s) => {
+                  const value = s.data[i]?.count ?? 0;
+                  return (
+                    <span
+                      class="bar"
+                      style={`--h:${(value / top) * 100}%;--c:${s.color};--d:${i * 28}ms`}
+                      title={`${s.name}: ${value} · ${shortDay(day)}`}
+                    >
+                      <span class="bar__value">{value}</span>
+                    </span>
+                  );
+                })}
+              </div>
+              <span class="col__label">{shortDay(day)}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+
+  <table class="visually-hidden">
+    <caption>{title}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Día</th>
+        {series.map((s) => <th scope="col">{s.name}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        days.map((day, i) => (
+          <tr>
+            <th scope="row">{day}</th>
+            {series.map((s) => <td>{s.data[i]?.count ?? 0}</td>)}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</figure>
+
+<style>
+  .chart {
+    margin: 0;
+    padding: var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-s);
+  }
+
+  .chart__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-m);
+  }
+
+  .chart__head h3 {
+    font-size: var(--step-1);
+  }
+
+  .chart__head p {
+    font-size: var(--step--1);
+    color: var(--gray-500);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.74rem;
+    color: var(--gray-700);
+  }
+
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .legend__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+
+  .chart__body {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem;
+    height: 260px;
+  }
+
+  .axis-y {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    list-style: none;
+    padding: 0 0 22px;
+    margin: 0;
+    font-size: 0.68rem;
+    color: var(--gray-300);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .axis-y li {
+    line-height: 1;
+    transform: translateY(-0.35em);
+  }
+
+  .plot {
+    position: relative;
+    min-width: 0;
+  }
+
+  .grid {
+    position: absolute;
+    inset: 0 0 22px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+
+  .grid span {
+    height: 1px;
+    background: var(--earth-300);
+  }
+
+  .cols {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 100%;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .col {
+    flex: 1 0 34px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .col__bars {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    padding-inline: 2px;
+  }
+
+  .bar {
+    position: relative;
+    flex: 1;
+    max-width: 12px;
+    min-height: 2px;
+    height: var(--h);
+    background: var(--c);
+    border-radius: 3px 3px 0 0;
+    transform-origin: bottom;
+    animation: growBar 0.7s var(--ease) backwards;
+    animation-delay: var(--d);
+    transition:
+      filter 0.2s var(--ease),
+      transform 0.2s var(--ease);
+  }
+
+  @keyframes growBar {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  .bar:hover {
+    filter: brightness(1.12);
+    transform: scaleX(1.25);
+  }
+
+  .bar__value {
+    position: absolute;
+    bottom: calc(100% + 5px);
+    left: 50%;
+    translate: -50% 0;
+    padding: 0.15rem 0.4rem;
+    border-radius: 5px;
+    background: var(--navy-900);
+    color: var(--earth-100);
+    font-size: 0.66rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s var(--ease);
+  }
+
+  .bar:hover .bar__value {
+    opacity: 1;
+  }
+
+  .col__label {
+    height: 22px;
+    display: grid;
+    place-items: center;
+    font-size: 0.6rem;
+    color: var(--gray-500);
+    white-space: nowrap;
+  }
+
+  /* En móvil sólo se muestra una etiqueta de cada tres. */
+  .col:not(:nth-child(3n + 1)) .col__label {
+    visibility: hidden;
+  }
+
+  @media (min-width: 48rem) {
+    .chart {
+      padding: var(--space-l);
+    }
+
+    .chart__head {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .col:not(:nth-child(3n + 1)) .col__label {
+      visibility: visible;
+    }
+  }
+</style>

@@ -1,0 +1,112 @@
+---
+interface Props {
+  label: string;
+  value: number | string;
+  hint?: string;
+  accent?: "navy" | "terracotta" | "gray" | "earth";
+  icon?: "eye" | "users" | "heart" | "chat";
+}
+
+const { label, value, hint, accent = "navy", icon = "eye" } = Astro.props;
+
+const paths: Record<string, string> = {
+  eye: "M12 5c-5 0-8.5 4.4-9.6 6.1a1.6 1.6 0 0 0 0 1.8C3.5 14.6 7 19 12 19s8.5-4.4 9.6-6.1a1.6 1.6 0 0 0 0-1.8C20.5 9.4 17 5 12 5Zm0 10.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z",
+  users:
+    "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7.5.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 20c0-3.3 3.1-6 7-6s7 2.7 7 6v1H2v-1Zm15.2-4.6c2.8.4 4.8 2.4 4.8 4.8V21h-4.6v-1c0-1.7-.7-3.3-1.9-4.4l1.7-.2Z",
+  heart:
+    "M12 20.7 4.6 13.3a4.8 4.8 0 0 1 0-6.8 4.8 4.8 0 0 1 6.8 0l.6.6.6-.6a4.8 4.8 0 0 1 6.8 0 4.8 4.8 0 0 1 0 6.8Z",
+  chat: "M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9.4L4 21.5V6a2 2 0 0 1 2-2Z",
+};
+
+const display = typeof value === "number" ? value.toLocaleString("es-EC") : value;
+---
+
+<article class:list={["stat", `stat--${accent}`]}>
+  <span class="stat__icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d={paths[icon]}></path></svg>
+  </span>
+  <p class="stat__label">{label}</p>
+  <p class="stat__value">{display}</p>
+  {hint && <p class="stat__hint">{hint}</p>}
+</article>
+
+<style>
+  .stat {
+    position: relative;
+    padding: var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-s);
+    overflow: hidden;
+    transition:
+      transform 0.35s var(--ease),
+      box-shadow 0.35s var(--ease);
+  }
+
+  .stat::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 4px;
+    background: var(--accent, var(--navy-700));
+  }
+
+  .stat:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-m);
+  }
+
+  .stat--navy {
+    --accent: var(--navy-700);
+  }
+  .stat--terracotta {
+    --accent: var(--terracotta);
+  }
+  .stat--gray {
+    --accent: var(--gray-500);
+  }
+  .stat--earth {
+    --accent: var(--earth-300);
+  }
+
+  .stat__icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    margin-bottom: var(--space-s);
+  }
+
+  .stat__icon svg {
+    width: 19px;
+    height: 19px;
+    fill: var(--accent);
+  }
+
+  .stat__label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+  }
+
+  .stat__value {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1.05;
+    color: var(--navy-900);
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.2rem;
+  }
+
+  .stat__hint {
+    margin-top: 0.35rem;
+    font-size: var(--step--1);
+    color: var(--gray-500);
+  }
+</style>

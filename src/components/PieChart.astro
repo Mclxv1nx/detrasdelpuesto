@@ -1,0 +1,276 @@
+---
+interface Props {
+  title: string;
+  subtitle?: string;
+  data: { label: string; value: number }[];
+  colors?: string[];
+  donut?: boolean;
+}
+
+const {
+  title,
+  subtitle,
+  data,
+  colors = ["#1e3550", "#c8785a", "#737b86", "#e0a58c", "#2c4967"],
+  donut = true,
+} = Astro.props;
+
+const total = data.reduce((sum, d) => sum + d.value, 0);
+
+// Geometría del anillo: circunferencia = 2πr con r = 15.9155 → 100 unidades.
+const R = 15.9155;
+const CIRC = 100;
+
+let offset = 0;
+const slices = data.map((d, i) => {
+  const pct = total > 0 ? (d.value / total) * 100 : 0;
+  const slice = {
+    ...d,
+    pct,
+    color: colors[i % colors.length],
+    dash: `${pct} ${CIRC - pct}`,
+    // El trazo SVG arranca a las 3 en punto; -25 lo rota a las 12.
+    offset: 25 - offset,
+    delay: `${i * 120}ms`,
+  };
+  offset += pct;
+  return slice;
+});
+
+const pctFmt = new Intl.NumberFormat("es-EC", { maximumFractionDigits: 1 });
+---
+
+<figure class="pie">
+  <figcaption class="pie__head">
+    <h3>{title}</h3>
+    {subtitle && <p>{subtitle}</p>}
+  </figcaption>
+
+  <div class="pie__body">
+    <div class="pie__ring">
+      <svg viewBox="0 0 36 36" role="img" aria-label={title}>
+        <circle class="track" cx="18" cy="18" r={R}></circle>
+        {
+          total > 0 &&
+            slices.map((s) => (
+              <circle
+                class="slice"
+                cx="18"
+                cy="18"
+                r={R}
+                stroke={s.color}
+                stroke-dasharray={s.dash}
+                stroke-dashoffset={s.offset}
+                style={`--delay:${s.delay}`}
+              >
+                <title>{`${s.label}: ${s.value} (${pctFmt.format(s.pct)}%)`}</title>
+              </circle>
+            ))
+        }
+      </svg>
+
+      {
+        donut && (
+          <div class="pie__center">
+            <strong>{total.toLocaleString("es-EC")}</strong>
+            <span>total</span>
+          </div>
+        )
+      }
+    </div>
+
+    <ul class="pie__legend">
+      {
+        slices.map((s) => (
+          <li>
+            <span class="dot" style={`background:${s.color}`} />
+            <span class="name">{s.label}</span>
+            <span class="value">
+              {s.value.toLocaleString("es-EC")}
+              <small>{pctFmt.format(s.pct)}%</small>
+            </span>
+          </li>
+        ))
+      }
+      {total === 0 && <li class="empty">Aún no hay datos suficientes.</li>}
+    </ul>
+  </div>
+</figure>
+
+<style>
+  .pie {
+    margin: 0;
+    padding: var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-s);
+  }
+
+  .pie__head {
+    margin-bottom: var(--space-m);
+  }
+
+  .pie__head h3 {
+    font-size: var(--step-1);
+  }
+
+  .pie__head p {
+    font-size: var(--step--1);
+    color: var(--gray-500);
+  }
+
+  .pie__body {
+    display: grid;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  .pie__ring {
+    position: relative;
+    width: min(220px, 70vw);
+    margin-inline: auto;
+  }
+
+  .pie__ring svg {
+    width: 100%;
+    height: auto;
+    transform: rotate(0deg);
+  }
+
+  .track {
+    fill: none;
+    stroke: var(--earth-200);
+    stroke-width: 4;
+  }
+
+  .slice {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: butt;
+    transform-origin: center;
+    animation: sweep 0.8s var(--ease) backwards;
+    animation-delay: var(--delay);
+    transition:
+      stroke-width 0.25s var(--ease),
+      opacity 0.25s var(--ease);
+  }
+
+  @keyframes sweep {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .pie__ring:hover .slice {
+    opacity: 0.45;
+  }
+
+  .pie__ring .slice:hover {
+    opacity: 1;
+    stroke-width: 5.4;
+    cursor: pointer;
+  }
+
+  .pie__center {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .pie__center strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1;
+    color: var(--navy-900);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pie__center span {
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+  }
+
+  .pie__legend {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .pie__legend li {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: var(--radius-s);
+    font-size: var(--step--1);
+    transition: background-color 0.25s var(--ease);
+  }
+
+  .pie__legend li:hover {
+    background: var(--earth-100);
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+
+  .name {
+    color: var(--gray-700);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .value {
+    font-weight: 600;
+    color: var(--navy-900);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .value small {
+    font-weight: 500;
+    color: var(--gray-500);
+  }
+
+  .empty {
+    color: var(--gray-500);
+  }
+
+  @media (min-width: 48rem) {
+    .pie {
+      padding: var(--space-l);
+    }
+  }
+
+  @media (min-width: 30rem) {
+    .pie__body {
+      grid-template-columns: auto 1fr;
+      gap: var(--space-l);
+    }
+
+    .pie__ring {
+      margin-inline: 0;
+      width: 200px;
+    }
+  }
+</style>
