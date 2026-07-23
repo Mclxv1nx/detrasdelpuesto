@@ -193,6 +193,105 @@ const causas = [
 
     <Gallery />
 
+    <!-- Testimonio --------------------------------------------------------- -->
+    <section class="section testimonio" id="testimonio">
+      <div class="container">
+        <header class="testimonio__head reveal--scale">
+          <p class="section__number">03</p>
+          <p class="eyebrow">Voz de campo</p>
+          <h2>Testimonio: La lucha cotidiana en el comercio informal</h2>
+          <p class="testimonio__meta">
+            Santiago Vásquez, estudiante de Comunicación de segundo semestre,
+            entrevistó a <strong>Jote Canacuán</strong> (50 años), comerciante
+            informal en Ibarra.
+          </p>
+        </header>
+
+        <div class="audio-card reveal--rotate3d">
+          <div class="audio-card__deco" aria-hidden="true">
+            <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="40" cy="40" r="39" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4"/>
+              <path d="M32 26l20 14-20 14V26z" fill="currentColor"/>
+            </svg>
+          </div>
+
+          <div class="audio-card__info">
+            <p class="audio-card__label">Entrevista de campo</p>
+            <p class="audio-card__title">Jote Canacuán — Comerciante informal, Ibarra</p>
+            <p class="audio-card__interviewer">
+              Entrevistado por Santiago Vásquez · Estudiante de Comunicación, 2° semestre
+            </p>
+          </div>
+
+          <div class="audio-player" id="audio-player">
+            <audio id="testimony-audio" src="/audio/audio.mpeg" preload="metadata"></audio>
+
+            <!-- Barra de progreso -->
+            <div class="audio-player__progress-wrap" id="progress-wrap" role="slider"
+                 aria-label="Progreso del audio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="audio-player__progress-bg">
+                <div class="audio-player__progress-fill" id="progress-fill"></div>
+                <div class="audio-player__progress-thumb" id="progress-thumb"></div>
+              </div>
+            </div>
+
+            <!-- Tiempos -->
+            <div class="audio-player__times">
+              <span id="time-current">0:00</span>
+              <span id="time-total">–:––</span>
+            </div>
+
+            <!-- Controles -->
+            <div class="audio-player__controls">
+              <button class="audio-ctrl audio-ctrl--skip" id="btn-rewind" aria-label="Retroceder 10 segundos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.93"/>
+                  <text x="8" y="14" font-size="5" fill="currentColor" stroke="none">10</text>
+                </svg>
+              </button>
+
+              <button class="audio-ctrl audio-ctrl--play" id="btn-play" aria-label="Reproducir">
+                <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+              </button>
+
+              <button class="audio-ctrl audio-ctrl--skip" id="btn-forward" aria-label="Adelantar 10 segundos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-4.93"/>
+                  <text x="8" y="14" font-size="5" fill="currentColor" stroke="none">10</text>
+                </svg>
+              </button>
+
+              <!-- Volumen -->
+              <div class="audio-volume">
+                <button class="audio-ctrl audio-ctrl--vol" id="btn-mute" aria-label="Silenciar">
+                  <svg class="icon-vol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  </svg>
+                  <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+                  </svg>
+                </button>
+                <input class="audio-volume__slider" id="volume-slider" type="range" min="0" max="1" step="0.02" value="1" aria-label="Volumen"/>
+              </div>
+            </div>
+
+            <!-- Ondas decorativas -->
+            <div class="audio-waves" aria-hidden="true" id="audio-waves">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <Authors />
 
 
@@ -474,4 +573,427 @@ const causas = [
       grid-template-columns: repeat(4, 1fr);
     }
   }
+
+  /* Testimonio ------------------------------------------------------------- */
+
+  .testimonio {
+    background: var(--navy-900);
+    color: var(--earth-100);
+  }
+
+  .testimonio__head {
+    max-width: var(--measure);
+    margin-bottom: var(--space-xl);
+  }
+
+  .testimonio__head .section__number {
+    color: var(--terracotta-soft);
+  }
+
+  .testimonio__head .eyebrow {
+    color: var(--terracotta-soft);
+    margin-bottom: var(--space-2xs);
+  }
+
+  .testimonio__head h2 {
+    font-size: var(--step-3);
+    color: var(--earth-100);
+    margin-bottom: var(--space-xs);
+  }
+
+  .testimonio__meta {
+    color: var(--gray-300);
+    font-size: var(--step--1);
+  }
+
+  .testimonio__meta strong {
+    color: var(--terracotta-soft);
+  }
+
+  /* Audio card ------------------------------------------------------------- */
+
+  .audio-card {
+    display: grid;
+    gap: var(--space-l);
+    padding: var(--space-l);
+    background: var(--navy-800);
+    border: 1px solid color-mix(in srgb, var(--terracotta) 25%, transparent);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-l);
+    max-width: 780px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .audio-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 90% 10%, color-mix(in srgb, var(--terracotta) 12%, transparent), transparent);
+    pointer-events: none;
+  }
+
+  .audio-card__deco {
+    position: absolute;
+    top: var(--space-m);
+    right: var(--space-m);
+    width: 72px;
+    height: 72px;
+    color: color-mix(in srgb, var(--terracotta) 20%, transparent);
+    opacity: 0.6;
+  }
+
+  .audio-card__label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--terracotta-soft);
+    margin-bottom: 0.3rem;
+  }
+
+  .audio-card__title {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    color: var(--earth-100);
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .audio-card__interviewer {
+    font-size: var(--step--1);
+    color: var(--gray-300);
+  }
+
+  /* Player ----------------------------------------------------------------- */
+
+  .audio-player {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+  }
+
+  /* Progress */
+
+  .audio-player__progress-wrap {
+    cursor: pointer;
+    padding-block: 10px;
+    margin-block: -10px;
+  }
+
+  .audio-player__progress-bg {
+    position: relative;
+    height: 4px;
+    background: color-mix(in srgb, var(--earth-100) 15%, transparent);
+    border-radius: 99px;
+    overflow: visible;
+  }
+
+  .audio-player__progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--terracotta), var(--terracotta-soft));
+    border-radius: 99px;
+    transition: width 0.1s linear;
+  }
+
+  .audio-player__progress-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    width: 14px;
+    height: 14px;
+    background: var(--terracotta-soft);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition:
+      left 0.1s linear,
+      transform 0.2s var(--ease),
+      box-shadow 0.2s var(--ease);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--terracotta) 40%, transparent);
+  }
+
+  .audio-player__progress-wrap:hover .audio-player__progress-thumb,
+  .audio-player__progress-wrap:focus-visible .audio-player__progress-thumb {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--terracotta) 25%, transparent);
+  }
+
+  /* Times */
+
+  .audio-player__times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--gray-300);
+    margin-top: -0.25rem;
+  }
+
+  /* Controls */
+
+  .audio-player__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .audio-ctrl {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--earth-200);
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 0.4rem;
+    transition:
+      color 0.2s var(--ease),
+      background 0.2s var(--ease),
+      transform 0.15s var(--ease);
+  }
+
+  .audio-ctrl:hover {
+    color: var(--terracotta-soft);
+    background: color-mix(in srgb, var(--terracotta) 12%, transparent);
+    transform: scale(1.1);
+  }
+
+  .audio-ctrl:active {
+    transform: scale(0.95);
+  }
+
+  .audio-ctrl svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .audio-ctrl--play {
+    width: 52px;
+    height: 52px;
+    background: var(--terracotta);
+    color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--terracotta) 50%, transparent);
+    margin-inline: var(--space-2xs);
+    padding: 0;
+  }
+
+  .audio-ctrl--play:hover {
+    background: var(--terracotta-dark);
+    color: #fff;
+    transform: scale(1.08);
+  }
+
+  .audio-ctrl--play svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .audio-ctrl--skip svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Volume */
+
+  .audio-volume {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-left: auto;
+  }
+
+  .audio-volume__slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px;
+    height: 4px;
+    background: color-mix(in srgb, var(--earth-100) 20%, transparent);
+    border-radius: 99px;
+    outline: none;
+    cursor: pointer;
+    accent-color: var(--terracotta-soft);
+  }
+
+  .audio-volume__slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--terracotta-soft);
+    cursor: pointer;
+    transition: transform 0.15s var(--ease);
+  }
+
+  .audio-volume__slider::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
+  }
+
+  /* Sound waves */
+
+  .audio-waves {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 28px;
+    padding-top: var(--space-2xs);
+  }
+
+  .audio-waves span {
+    display: block;
+    width: 3px;
+    border-radius: 99px;
+    background: var(--terracotta-soft);
+    height: 6px;
+    opacity: 0.4;
+    transition: height 0.1s ease, opacity 0.3s ease;
+  }
+
+  .audio-waves.is-playing span {
+    opacity: 0.85;
+    animation: wave-beat 1.2s ease-in-out infinite;
+  }
+
+  .audio-waves.is-playing span:nth-child(1)  { animation-delay: 0s;    animation-duration: 1.1s; }
+  .audio-waves.is-playing span:nth-child(2)  { animation-delay: 0.1s;  animation-duration: 0.9s; }
+  .audio-waves.is-playing span:nth-child(3)  { animation-delay: 0.2s;  animation-duration: 1.3s; }
+  .audio-waves.is-playing span:nth-child(4)  { animation-delay: 0.05s; animation-duration: 0.8s; }
+  .audio-waves.is-playing span:nth-child(5)  { animation-delay: 0.15s; animation-duration: 1.0s; }
+  .audio-waves.is-playing span:nth-child(6)  { animation-delay: 0.25s; animation-duration: 1.2s; }
+  .audio-waves.is-playing span:nth-child(7)  { animation-delay: 0.0s;  animation-duration: 0.95s; }
+  .audio-waves.is-playing span:nth-child(8)  { animation-delay: 0.18s; animation-duration: 1.15s; }
+  .audio-waves.is-playing span:nth-child(9)  { animation-delay: 0.08s; animation-duration: 0.85s; }
+  .audio-waves.is-playing span:nth-child(10) { animation-delay: 0.22s; animation-duration: 1.05s; }
+
+  @keyframes wave-beat {
+    0%, 100% { height: 5px;  }
+    50%       { height: 22px; }
+  }
+
+  /* Responsive */
+  @media (min-width: 48rem) {
+    .audio-card {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+
+    .audio-player {
+      border-left: 1px solid color-mix(in srgb, var(--earth-100) 10%, transparent);
+      padding-left: var(--space-m);
+    }
+  }
 </style>
+
+<script>
+  /* -------------------------------------------------------------------------
+     Audio player — Testimonio
+     ------------------------------------------------------------------------- */
+  const audio        = document.getElementById("testimony-audio") as HTMLAudioElement | null;
+  const btnPlay      = document.getElementById("btn-play");
+  const btnRewind    = document.getElementById("btn-rewind");
+  const btnForward   = document.getElementById("btn-forward");
+  const btnMute      = document.getElementById("btn-mute");
+  const progressWrap = document.getElementById("progress-wrap");
+  const progressFill = document.getElementById("progress-fill");
+  const progressThumb= document.getElementById("progress-thumb");
+  const timeCurrent  = document.getElementById("time-current");
+  const timeTotal    = document.getElementById("time-total");
+  const volumeSlider = document.getElementById("volume-slider") as HTMLInputElement | null;
+  const waves        = document.getElementById("audio-waves");
+
+  if (!audio) throw new Error("Audio element not found");
+
+  const iconPlay  = btnPlay?.querySelector(".icon-play")  as HTMLElement | null;
+  const iconPause = btnPlay?.querySelector(".icon-pause") as HTMLElement | null;
+  const iconVol   = btnMute?.querySelector(".icon-vol")   as HTMLElement | null;
+  const iconMuted = btnMute?.querySelector(".icon-muted") as HTMLElement | null;
+
+  function fmt(s: number): string {
+    if (!isFinite(s)) return "–:––";
+    const m = Math.floor(s / 60);
+    const ss = String(Math.floor(s % 60)).padStart(2, "0");
+    return `${m}:${ss}`;
+  }
+
+  function setPlaying(playing: boolean) {
+    if (iconPlay && iconPause) {
+      iconPlay.style.display  = playing ? "none" : "";
+      iconPause.style.display = playing ? ""     : "none";
+    }
+    waves?.classList.toggle("is-playing", playing);
+    if (btnPlay) btnPlay.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
+  }
+
+  function updateProgress() {
+    if (!audio.duration) return;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    if (progressFill)  progressFill.style.width = `${pct}%`;
+    if (progressThumb) progressThumb.style.left  = `${pct}%`;
+    if (progressWrap)  progressWrap.setAttribute("aria-valuenow", String(Math.round(pct)));
+    if (timeCurrent)   timeCurrent.textContent   = fmt(audio.currentTime);
+  }
+
+  audio.addEventListener("loadedmetadata", () => {
+    if (timeTotal) timeTotal.textContent = fmt(audio.duration);
+  });
+
+  audio.addEventListener("timeupdate", updateProgress);
+
+  audio.addEventListener("play",  () => setPlaying(true));
+  audio.addEventListener("pause", () => setPlaying(false));
+  audio.addEventListener("ended", () => setPlaying(false));
+
+  btnPlay?.addEventListener("click", () => {
+    audio.paused ? audio.play() : audio.pause();
+  });
+
+  btnRewind?.addEventListener("click", () => {
+    audio.currentTime = Math.max(0, audio.currentTime - 10);
+  });
+
+  btnForward?.addEventListener("click", () => {
+    audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+  });
+
+  /* Scrubbing */
+  let scrubbing = false;
+
+  function scrubTo(e: MouseEvent | Touch) {
+    if (!progressWrap || !audio.duration) return;
+    const rect = progressWrap.getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    audio.currentTime = pct * audio.duration;
+  }
+
+  progressWrap?.addEventListener("mousedown", (e) => {
+    scrubbing = true;
+    scrubTo(e);
+  });
+
+  window.addEventListener("mousemove", (e) => { if (scrubbing) scrubTo(e); });
+  window.addEventListener("mouseup",   ()  => { scrubbing = false; });
+
+  progressWrap?.addEventListener("touchstart", (e) => scrubTo(e.touches[0]), { passive: true });
+  progressWrap?.addEventListener("touchmove",  (e) => scrubTo(e.touches[0]), { passive: true });
+
+  /* Volume */
+  volumeSlider?.addEventListener("input", () => {
+    audio.volume = parseFloat(volumeSlider.value);
+    const muted  = audio.volume === 0;
+    if (iconVol && iconMuted) {
+      iconVol.style.display   = muted ? "none" : "";
+      iconMuted.style.display = muted ? ""     : "none";
+    }
+  });
+
+  btnMute?.addEventListener("click", () => {
+    audio.muted = !audio.muted;
+    if (iconVol && iconMuted) {
+      iconVol.style.display   = audio.muted ? "none" : "";
+      iconMuted.style.display = audio.muted ? ""     : "none";
+    }
+    if (volumeSlider) volumeSlider.value = audio.muted ? "0" : String(audio.volume);
+  });
+</script>
