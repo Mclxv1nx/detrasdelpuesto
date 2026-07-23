@@ -63,12 +63,41 @@ const photos = [
   <div class="container">
     <header class="gallery__head reveal--scale">
       <p class="eyebrow">Trabajo de campo</p>
-      <h2>Imágenes desde el terreno</h2>
+      <h2>Video Reportaje y Galería</h2>
       <p class="gallery__intro">
-        El registro visual del reportaje en Otavalo e Ibarra: los puestos, las
-        voces institucionales y el equipo que documentó la investigación.
+        Un resumen audiovisual del reportaje seguido del registro fotográfico
+        desde Otavalo e Ibarra: los puestos, las voces institucionales y el
+        equipo que documentó la investigación.
       </p>
     </header>
+
+    <!-- Video reportaje -------------------------------------------------- -->
+    <div class="videoreportaje reveal--scale">
+      <div class="videoreportaje__badge">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        Video Reportaje
+      </div>
+      <div class="videoreportaje__frame-wrap">
+        <iframe
+          id="video-reportaje"
+          src="https://drive.google.com/file/d/1nW1xDyiILgXRG27dV7X5NGzlQmyOfSJD/preview"
+          title="Video Reportaje — Detrás del Puesto: comercio informal en Imbabura"
+          allow="autoplay; fullscreen"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      </div>
+      <p class="videoreportaje__caption">
+        <strong>Detrás del Puesto</strong> — Resumen del reportaje sobre el comercio
+        informal en Imbabura · Otavalo e Ibarra, Ecuador
+      </p>
+    </div>
+
+    <div class="gallery__divider" aria-hidden="true">
+      <span></span>
+      <p class="eyebrow">Galería fotográfica</p>
+      <span></span>
+    </div>
 
     <ul class="grid reveal-stagger">
       {
@@ -115,7 +144,85 @@ const photos = [
     color: var(--gray-700);
   }
 
+  /* Video Reportaje ------------------------------------------------------- */
+
+  .videoreportaje {
+    margin-bottom: var(--space-2xl);
+    background: var(--navy-900);
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    box-shadow: var(--shadow-l);
+    border: 1px solid color-mix(in srgb, var(--terracotta) 20%, transparent);
+    position: relative;
+  }
+
+  .videoreportaje__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: var(--space-m) var(--space-m) var(--space-s);
+    padding: 0.3rem 0.8rem 0.3rem 0.5rem;
+    background: var(--terracotta);
+    color: #fff;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .videoreportaje__badge svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .videoreportaje__frame-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+
+  .videoreportaje__frame-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .videoreportaje__caption {
+    padding: var(--space-s) var(--space-m) var(--space-m);
+    font-size: var(--step--1);
+    color: var(--gray-300);
+  }
+
+  .videoreportaje__caption strong {
+    color: var(--earth-100);
+  }
+
+  /* Divider --------------------------------------------------------------- */
+
+  .gallery__divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-m);
+    margin-bottom: var(--space-l);
+  }
+
+  .gallery__divider span {
+    flex: 1;
+    height: 1px;
+    background: var(--earth-300);
+  }
+
+  .gallery__divider .eyebrow {
+    white-space: nowrap;
+    color: var(--gray-500);
+  }
+
   /* Mobile-first: una sola columna. */
+
   .grid {
     display: grid;
     grid-template-columns: 1fr;
