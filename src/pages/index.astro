@@ -296,6 +296,93 @@ const causas = [
 
 
 
+    {/* Fuentes Oficiales --------------------------------------------------- */}
+    <section class="section fuentes" id="fuentes">
+      <div class="container">
+        <header class="fuentes__head reveal--scale">
+          <p class="eyebrow">Respaldo documental</p>
+          <h2>Fuentes Oficiales y Documentación de Referencia</h2>
+          <p class="fuentes__intro">
+            Para respaldar los datos del reportaje en el portal, se han utilizado los reportes del
+            <strong>Instituto Nacional de Estadística y Censos (INEC)</strong> y la metodología del mercado laboral ecuatoriano:
+          </p>
+        </header>
+
+        <ol class="fuentes__list">
+          <li class="fuente reveal--left">
+            <span class="fuente__num">01</span>
+            <div class="fuente__body">
+              <h3 class="fuente__title">Indicadores de Empleo e Informalidad (ENEMDU)</h3>
+              <p class="fuente__desc">
+                Los datos sobre el empleo en el sector informal, subempleo y desempleo provienen de las publicaciones
+                periódicas de la <em>Encuesta Nacional de Empleo, Desempleo y Subempleo</em>.
+              </p>
+              <a
+                class="fuente__link"
+                href="https://www.ecuadorencifras.gob.ec/empleo-en-el-sector-informal/?hl=es-US"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                ecuadorencifras.gob.ec — Empleo en el Sector Informal
+              </a>
+            </div>
+          </li>
+
+          <li class="fuente reveal--left">
+            <span class="fuente__num">02</span>
+            <div class="fuente__body">
+              <h3 class="fuente__title">Informes Estadísticos Trimestrales y Anuales</h3>
+              <p class="fuente__desc">
+                Los porcentajes sobre la Población Económicamente Activa (PEA), subempleo y ocupación informal
+                se basan en los boletines metodológicos del INEC:
+              </p>
+              <div class="fuente__links">
+                <a
+                  class="fuente__link"
+                  href="https://drive.google.com/viewer?url=https%3A%2F%2Fwww.ecuadorencifras.gob.ec%2Fdocumentos%2Fweb-inec%2FEMPLEO%2F2024%2Fanual%2FBoletin_tecnico_anual_enero-diciembre_2024.pdf%3Fhl%3Des-US&embedded=true&web_source=homepage"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Boletín Técnico Anual enero–diciembre 2024 (PDF)
+                </a>
+                <a
+                  class="fuente__link"
+                  href="https://www.ecuadorencifras.gob.ec/enemdu-trimestral/?hl=es-US"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  ENEMDU Trimestral — Datos actualizados
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li class="fuente reveal--left">
+            <span class="fuente__num">03</span>
+            <div class="fuente__body">
+              <h3 class="fuente__title">Censo de Población y Vivienda / Contexto Territorial Imbabura</h3>
+              <p class="fuente__desc">
+                Para la contextualización territorial y distribución demográfica de la provincia de Imbabura
+                (Ibarra y Otavalo):
+              </p>
+              <a
+                class="fuente__link"
+                href="https://www.ecuadorencifras.gob.ec/censo-de-poblacion-y-vivienda/?hl=es-US"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                ecuadorencifras.gob.ec — Censo de Población y Vivienda
+              </a>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
     {
       !dbOnline && (
         <p class="db-warning">
@@ -526,6 +613,110 @@ const causas = [
     color: color-mix(in srgb, var(--earth-200) 55%, transparent);
   }
 
+
+  /* Fuentes -------------------------------------------------------------- */
+
+  .fuentes {
+    background: var(--surface);
+    border-block: 1px solid var(--earth-300);
+  }
+
+  .fuentes__head {
+    max-width: var(--measure);
+    margin-bottom: var(--space-xl);
+  }
+
+  .fuentes__head h2 {
+    font-size: var(--step-3);
+    margin-bottom: var(--space-xs);
+  }
+
+  .fuentes__intro {
+    color: var(--gray-700);
+  }
+
+  .fuentes__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .fuente {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-m);
+    padding: var(--space-m);
+    background: var(--earth-100);
+    border: 1px solid var(--earth-300);
+    border-radius: var(--radius-m);
+    transition:
+      border-color 0.3s var(--ease),
+      box-shadow 0.3s var(--ease);
+  }
+
+  .fuente:hover {
+    border-color: color-mix(in srgb, var(--terracotta) 40%, transparent);
+    box-shadow: var(--shadow-m);
+  }
+
+  .fuente__num {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    color: var(--gray-300);
+    line-height: 1;
+    transition: color 0.3s var(--ease);
+  }
+
+  .fuente:hover .fuente__num {
+    color: var(--terracotta);
+  }
+
+  .fuente__title {
+    font-size: var(--step-0);
+    font-weight: 700;
+    color: var(--navy-900);
+    margin-bottom: var(--space-2xs);
+  }
+
+  .fuente__desc {
+    font-size: var(--step--1);
+    color: var(--gray-700);
+    margin-bottom: var(--space-xs);
+    max-width: 65ch;
+  }
+
+  .fuente__links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .fuente__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--terracotta-dark);
+    text-decoration: none;
+    transition: color 0.2s var(--ease), gap 0.2s var(--ease);
+    width: fit-content;
+  }
+
+  .fuente__link:hover {
+    color: var(--terracotta);
+    gap: 0.6rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .fuente__link svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
 
   /* Aviso ---------------------------------------------------------------- */
 
