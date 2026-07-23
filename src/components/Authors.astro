@@ -18,6 +18,12 @@ const authors = [
     bio: "Investigador enfocado en dinámicas territoriales e indicadores de empleo. Responsable de la sistematización de datos oficiales, contraste de fuentes y redacción del cuerpo del informe.",
     photo: "/img/alexis.jpeg",
   },
+  {
+    name: "Santiago Vázquez",
+    role: "Colaborador de Investigación",
+    bio: "Colaborador del equipo en tareas de investigación, apoyo en la recopilación de fuentes y verificación de datos para el desarrollo del reportaje.",
+    photo: "/img/santiago-vazquez.jpeg",
+  },
 ];
 ---
 
@@ -143,9 +149,15 @@ const authors = [
     line-height: 1.55;
   }
 
-  @media (min-width: 44rem) {
+  @media (min-width: 30rem) {
     .autores__grid {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .autores__grid {
+      grid-template-columns: repeat(4, 1fr);
     }
   }
 </style>

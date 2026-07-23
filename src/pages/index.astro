@@ -93,20 +93,7 @@ const causas = [
   <main id="contenido">
     <Hero likes={totalLikes} comments={allComments.length} />
 
-    <!-- Objetivo ---------------------------------------------------------- -->
-    <section class="section objetivo" id="objetivo">
-      <div class="container objetivo__inner reveal--rotate3d">
-        <p class="eyebrow">Objetivo del reportaje</p>
-        <p class="objetivo__text">
-          Analizar y visibilizar la dinámica del comercio informal en la
-          provincia de Imbabura, examinando los factores socioeconómicos que
-          impulsan su crecimiento, las condiciones de quienes ejercen esta
-          actividad y las implicaciones socioespaciales en el entorno urbano
-          local. Todo esto abordado desde un enfoque
-          <mark>periodístico neutral, investigativo y equilibrado</mark>.
-        </p>
-      </div>
-    </section>
+
 
     <!-- Introducción ------------------------------------------------------ -->
     <section class="section intro" id="introduccion">
@@ -208,30 +195,7 @@ const causas = [
 
     <Authors />
 
-    <!-- Conclusión -------------------------------------------------------- -->
-    <section class="section conclusion" id="conclusion">
-      <div class="container conclusion__inner">
-        <div class="reveal--scale">
-          <p class="section__number section__number--light">03</p>
-          <h2>Conclusión</h2>
-          <div class="prose">
-            <p>
-              El crecimiento del comercio informal en Imbabura no puede ni debe
-              entenderse como un problema aislado de ordenanzas urbanas. Por el
-              contrario, es el síntoma más visible de profundas transformaciones
-              estructurales en nuestro mercado de trabajo.
-            </p>
-            <p>
-              Lograr un equilibrio justo entre el derecho al trabajo, la
-              dignidad socioeconómica de los comerciantes y la organización
-              armónica de las ciudades sigue siendo, hoy por hoy, uno de los
-              mayores desafíos para los gobiernos locales y la sociedad en
-              general.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+
 
     {
       !dbOnline && (
@@ -260,33 +224,6 @@ const causas = [
     color: var(--terracotta-soft);
   }
 
-  /* Objetivo ------------------------------------------------------------- */
-
-  .objetivo {
-    background: var(--earth-100);
-    padding-block: var(--space-xl);
-  }
-
-  .objetivo__inner {
-    max-width: 900px;
-  }
-
-  .objetivo__text {
-    margin-top: var(--space-s);
-    font-family: var(--font-display);
-    font-size: var(--step-2);
-    line-height: 1.35;
-    color: var(--navy-800);
-  }
-
-  .objetivo__text mark {
-    background: linear-gradient(
-      180deg,
-      transparent 62%,
-      color-mix(in srgb, var(--terracotta) 40%, transparent) 62%
-    );
-    color: inherit;
-  }
 
   /* Introducción --------------------------------------------------------- */
 
@@ -490,27 +427,6 @@ const causas = [
     color: color-mix(in srgb, var(--earth-200) 55%, transparent);
   }
 
-  /* Conclusión ----------------------------------------------------------- */
-
-  .conclusion {
-    background: var(--navy-900);
-    color: var(--earth-200);
-  }
-
-  .conclusion__inner {
-    max-width: 820px;
-  }
-
-  .conclusion h2 {
-    font-size: var(--step-3);
-    color: var(--earth-100);
-    margin-bottom: var(--space-s);
-  }
-
-  .conclusion .prose p {
-    color: color-mix(in srgb, var(--earth-200) 82%, transparent);
-    font-size: var(--step-0);
-  }
 
   /* Aviso ---------------------------------------------------------------- */
 
